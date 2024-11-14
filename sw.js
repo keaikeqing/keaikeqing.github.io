@@ -103,7 +103,7 @@ const transferError2Response = (err) => new Response(JSON.stringify({
                 stack: err.stack,
                 addition: err
             }), {
-                status: 600,
+                status: 599,
                 headers: {
                     'Content-Type': 'application/json'
                 }
