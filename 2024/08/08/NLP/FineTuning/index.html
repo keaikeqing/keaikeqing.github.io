@@ -1,0 +1,1085 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><title>微调(Fine-Tuning) | 可爱可倾</title><meta name="author" content="可爱可倾"><meta name="copyright" content="可爱可倾"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f9fe"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="微调(Fine-Tuning)"><meta name="application-name" content="微调(Fine-Tuning)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="#f7f9fe"><meta property="og:type" content="article"><meta property="og:title" content="微调(Fine-Tuning)"><meta property="og:url" content="https://blog.keaikeqing.cn/2024/08/08/NLP/FineTuning/index.html"><meta property="og:site_name" content="可爱可倾"><meta property="og:description" content="微调(Fine-Tuning) 1 开源基座模型 大语言模型的训练分为两个阶段： （1）在海量文本语料上的无监督预训练，学习通用的语义表示和世界知识。 （2）在小规模数据上，进行指令微调和基于人类反馈的强化学习，更好地对齐最终任务和人类偏好。 几乎所有知识都是在预训练过程中学习到的，只需要有限的指令"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://blog.keaikeqing.cn/papercover/NLP/NLP.webp"><meta property="article:author" content="可爱可倾"><meta property="article:tag"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://blog.keaikeqing.cn/papercover/NLP/NLP.webp"><meta name="description" content="微调(Fine-Tuning) 1 开源基座模型 大语言模型的训练分为两个阶段： （1）在海量文本语料上的无监督预训练，学习通用的语义表示和世界知识。 （2）在小规模数据上，进行指令微调和基于人类反馈的强化学习，更好地对齐最终任务和人类偏好。 几乎所有知识都是在预训练过程中学习到的，只需要有限的指令"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://blog.keaikeqing.cn/2024/08/08/NLP/FineTuning/"><link rel="preconnect" href="//cdn.cbd.int"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="google-site-verification" content="xxx"/><meta name="baidu-site-verification" content="code-xxx"/><meta name="msvalidate.01" content="xxx"/><link rel="manifest" href="/manifest.json"/><meta name="msapplication-TileColor" content="var(--anzhiyu-main)"/><link rel="mask-icon" href="/img/siteicon/apple-icon-180.png" color="#5bbad5"/><link rel="apple-touch-icon" sizes="180x180" href="/img/siteicon/apple-icon-180.png"/><link rel="apple-touch-icon-precomposed" sizes="180x180" href="/img/siteicon/apple-icon-180.png"/><link rel="icon" type="image/png" sizes="32x32" href="/img/32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/img/16.png"/><link rel="bookmark" href="/img/siteicon/apple-icon-180.png"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1290-2796.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2796-1290.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1179-2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2556-1179.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  linkPageTop: undefined,
+  peoplecanvas: undefined,
+  postHeadAiDescription: undefined,
+  diytitle: {"enable":true,"leaveTitle":"w(ﾟДﾟ)w 期待下次再见!","backTitle":"♪(^∇^*) 欢迎肥来！"},
+  LA51: {"enable":true,"ck":"3KAOg7IT5KO5nuXL","LingQueMonitorID":"3KIpEgdIKLBlVguQ"},
+  greetingBox: {"enable":true,"default":"每一天安好","list":[{"greeting":"晚安😴","startTime":0,"endTime":5},{"greeting":"早上好鸭👋, 祝你一天好心情！","startTime":6,"endTime":9},{"greeting":"上午好👋, 状态很好，鼓励一下～","startTime":10,"endTime":10},{"greeting":"11点多啦, 在坚持一下就吃饭啦～","startTime":11,"endTime":11},{"greeting":"午安👋, 宝贝","startTime":12,"endTime":14},{"greeting":"🌈充实的一天辛苦啦！","startTime":14,"endTime":18},{"greeting":"19点喽, 奖励一顿丰盛的大餐吧🍔。","startTime":19,"endTime":19},{"greeting":"晚上好👋, 在属于自己的时间好好放松😌~","startTime":22,"endTime":24}]},
+  twikooEnvId: 'https://twikoo.keaikeqing.cn',
+  commentBarrageConfig:undefined,
+  music_page_default: "nav_music",
+  root: '/',
+  preloader: {"source":3},
+  friends_vue_info: undefined,
+  navMusic: true,
+  mainTone: {"mode":"both","api":"https://img2color-go.vercel.app/api?img=","cover_change":true},
+  authorStatus: {"skills":["🤖️ 数码科技爱好者","📚 热爱学习与探索","🎮 游戏娱乐和创作","🔨 设计开发一条龙","🎨 创意与艺术设计","🌟 追随动漫二次元"]},
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简","rightMenuMsgToTraditionalChinese":"转为繁体","rightMenuMsgToSimplifiedChinese":"转为简体"},
+  noticeOutdate: {"limitDay":180,"position":"top","messagePrev":"时光悄然流逝，距离上次更新已有","messageNext":"天，内容可能已经过时，请谨慎参考。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":330},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    simplehomepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"copy":true,"copyrightEbable":true,"limitCount":50,"languages":{"author":"作者: 可爱可倾","link":"链接: ","source":"来源: 可爱可倾","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。","copySuccess":"复制成功，复制和转载请标注本文地址"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#425AEF","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.min.js',
+      css: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: true,
+  isAnchor: true,
+  shortcutKey: {"enable":true,"delay":100,"shiftDelay":200},
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  configTitle: '可爱可倾',
+  title: '微调(Fine-Tuning)',
+  postAI: '',
+  pageFillDescription: '微调(Fine-Tuning), 1 开源基座模型, 模型对比, 1) 词表扩充, 2) 模型结构, 3) Layer Normalization, 4) 激活函数, 2 高效参数微调方法, 2.1 提示微调(Prompt Tuning), 2.2 前缀微调(Pre-fix Tuning), 2.3 适配器微调(Adapter Tuning), 2.3.1 LLaMA-adapter, 2.4.1 模型量化(Quantization), 量化方法, 2.4.2 量化低秩适配(QLoRA), NF数据类型, 双量化(Double Quant), 统一内存分页微调开源基座模型大语言模型的训练分为两个阶段在海量文本语料上的无监督预训练学习通用的语义表示和世界知识在小规模数据上进行指令微调和基于人类反馈的强化学习更好地对齐最终任务和人类偏好几乎所有知识都是在预训练过程中学习到的只需要有限的指令微调数据就可以生成高质量的回复因此基座模型的性能是至关重要的如果基座模型的性能不够好指令微调和强化学习也难以取得很好的效果主流的开源大语言模型主要有三个和模型模型结构位置编码激活函数模型对比词表扩充原模型的词表大小是主要是在英文语料上进行训练的在中文上和多语种上效果比较差模型是在以英文为主的拉丁语系语料上进行训练的训练语料不包含中文与有关词表规模小可能将一个汉字切分为多个编码效率低模型学习难度大扩展中文词表后单个汉字倾向于被切分为个避免了一个汉字被切分为多个的问题提升了中文编码效率在中文语料上使用训练一个中文将中文与原始的合并起来通过组合二者的词汇表最终获得一个合并的称为为了适应新的将模型的矩阵从扩展到新加入的中文附加到原始矩阵的末尾确保原始词表表的矩阵不受影响在中文语料上进一步预训练冻结和固定的模型参数只训练矩阵学习新加入中文的词向量表示同时最小化对原模型的干扰在指令微调阶段可以放开全部模型参数进行训练模型结构主流模型都采用结构其中和采用了采用了模型结构采用单向注意力掩码以确保每个输入标记只能关注过去的标记和它本身对前缀标记执行双向注意力并仅对生成的标记执行单向注意力这样与类似可以双向编码前缀序列并自回归的逐个预测输出标记其中在编码和解码阶段共享相同的参数不同的部分的互相能看到严格遵守只有后面的才能看到前面的的规则结构的存在一个劣势训练效率低结构会在所有的上计算损失而只会在输出上计算损失而不计算输入上的损失在有相同数量的训练的情况下要比的效果差因为训练过程中实际用到的数量要更少注的成功已经证明了结构的大语言模型可以获得非常好的和生成能力通过指令微调可以进一步激发模型的能力至于结构的大语言模型能否获得相当的和能力还缺少足够的验证训练集中没有某个类别的样本但是如果我们可以学到一个映射这个映射好到即使在训练的时候没看到这个类但是在遇到的时候依然能通过这个映射得到这个新类的特征模型在只见过一个训练样本的情况下学习并完成新的任务常见于图像识别领域模型在见过少量通常是几个到几十个训练样本的情况下学习并完成新的任务在抽取序列中某一个词的特征时能够看到整个序列中所有的信息即上文和下文同时看到主要作用是从输入序列中抽取特征形成一个表示序列的上下文向量中因为有机制的存在使得它在编码某一个词的特征时只能看到自身和它之前的文本信息主要作用是根据生成的上下文向量和之前已经生成的词逐步生成目标序列中的每个词用过去研究的经验说话的泛化性能更好支持一直复用对多轮对话更友好预训练任务难度问题纯粹的架构预训练每个位置所能接触的信息比其他架构少要预测下一个难度更高当模型足够大数据足够多的时候模型学习通用表征的上限更高双向的注意力矩阵容易退化为低秩状态而的注意力矩阵是下三角矩阵必然是满秩的建模能力更强具有隐式的位置编码功能打破了的位置不变性而带有双向的模型如果不带位置编码双向的部分可以对换也不改变表示对语序的区分能力天生较弱架构之所以能够在某些场景下表现更好大概只是因为它多了一倍参数在统计学中协变量偏移指的是源域和目标域边缘分布的不一致但是它们的条件分布却是相同的对于深度学习来说指的是训练集和测试集的输入特征分布不同例如训练数据和测试数据拍摄条件不同但在给定特征时输出的分布是一致的用训练集得到的模型在测试集上做性能评估得到的不是模型的真实水平训练集和测试集分布差异过大我们训练得到的不是真实模型因此在机器学习中我们期望数据是独立同分布的这要求训练集和测试集的样本都是从同一个分布独立采样而来但是在深层神经网络的训练中当中间神经层的前一层参数发生改变时该层的输入分布也会发生改变也就是存在内部协变量偏移问题中间的神经层需要不断适应这种变化这会降低整个网络的收敛速度可以通过固定每一层网络的输入值分布来减缓问题白化通过调整输入数据的分布来减少协变量偏移的影响比如即标准正态分布去除相关性协方差矩阵奇异值分解白化过程计算成本太高如中需要计算协方差矩阵并在每一轮训练的每一层都执行该运算白化过程改变了网络中每一层的分布因此改变了网络层中本身数据的表达能力底层网络学习到的参数信息会被白化操作丢失归一化使得样本处于同一分布且可以解决每批训练数据分布不同的问题而且包含线性变换操作可以让数据尽可能恢复本身的表达能力即转换为均值为方差为的标准正态分布主要操作有去均值除以标准差线性变换缩放和平移常用的方法有等主要区别在于操作的特征维度不同基本计算公式如下其中和是可学习的参数和是均值和方差是一个很小的数防止分母为假定输入数据的维度是其中是是通道数和是高和宽对整个批次的数据进行归一化在维度上求均值和方差保留维度对每个通道进行归一化对单个样本的所有特征进行归一化在维度上求均值和方差保留维度对每个样本的每个通道独立进行归一化在维度上求均值和方差保留维度在内部求均值和标准差对每个样本的特定组别的特征进行归一化将通道分为若干组每组进行归一化各组用其对应的归一化参数独立地归一化总结适用于领域处理序列数据时表现差因为序列数据的维度是变化的而是在固定维度上进行归一化的因此不适用于等序列模型小时效果差因为每个的统计特性会有较大波动适用于等序列模型适用于序列数据因为是在每个样本上进行归一化的不受影响适用于序列数据因为是在序列长度上对每个样本进行归一化对单个样本的所有特征进行统一归一化处理如果这些特征来自不同的类别或具有不同的性质可能会降低模型的表达能力不适应输入变化很大的数据图像的风格迁移对每个样本的每个特征进行归一化因此它可以捕捉到更多的细节信息可能会过度强调细节信息忽视了更宏观的信息计算成本较高计算成本比和要高不适应通道之间的相关性较强数据适用于占用显存比较大的任务如图像分割既可以捕获到的统计特性又可以捕获到样本的细节信息是和的折中方案对不敏感性能取决于组的大小计算成本比和要高采用而又可以细分为以下几种按方法分类对单个样本的所有特征进行归一化标准正态分布线性变换通过实验证明操作并不重要移除了中的均值项可以看作在均值为时的一个特例无需计算均值提高了训练速度不仅用作标准化还作为残差连接的一部分将前一层的输出与标准化后的输出相加可以缓解爆炸式模型更新的问题按位置分类在每个子层的输出后应用结构的最终效果是要好于的只不过要达到自己的最优效果需要加等训练技巧如果和用一样的训练配置则效果不如上限高于但是需要更多的训练技巧在深层的梯度范式逐渐增大导致使用的深层容易出现训练不稳定的问题在每个子层的输入前应用同一设置下结构往往更容易训练但是最终效果通常不如无形地增加了模型的宽度而降低了模型的深度而在深度学习中深度通常比宽度更重要也就是说的深度有水分一个层的模型其实际等效层数不如层的模型层数少就会导致效果变差相比于在深层的梯度范式近似相等所以使用的深层训练更加稳定结合了和的优点同时在输入前和输出后应用有效控制每一层的激活值避免它们过大模型能够更好地学习数据特征训练不稳定可能会导致训练崩溃激活函数通常先将向量从维度升维到中间维度再从降维到计算公式如下其中是非线性激活函数广泛使用的激活函数有等其中是标准正态分布的累积分布函数是函数通过引入线性门控单元来增强模型的非线性能力额外增加了一个权重矩阵即下式中的共有三个权重矩阵获得了更好的模型性能高效参数微调方法大语言模型的参数量进行全量微调成本很高高效参数微调在微调大模型时只训练一小部分参数高效参数微调方法有以下几方面优点显存占用少对硬件资源要求低训练速度快耗时更短更低的存储成本不同的任务可以共享大部分的权重参数可能会有更好的模型性能减轻了过拟合问题提示微调原本的含义指的是通过修改输入来获得更好的模型效果这里的提示是硬提示我们直接修改输入输入是不可导的例如我们可以将输入从修改为引导模型生成想要的输出与硬提示相对应软提示微调将一个可训练张量与输入文本的拼接起来这个可训练张量可以通过反向传播来优化进而提升目标任务的模型效果这里的可训练张量可以理解为文本对应的是一个冻结大模型原始的参数只训练这个新增加的张量随着基座模型参数量的增大效果会变好尺寸实际上都只是改变的输入文本不改变参数但是硬提示是通过手动设计的自然语言提示来引导模型通过改变输入文本来间接影响嵌入表示而软提示通过可训练的提示嵌入直接影响输入表示能够进行优化和微调适用于更复杂和多样化的任务前缀微调与相似将一个特定任务的张量添加到输入这个张量是可训练的保持预训练模型的参数不变主要区别如下将参数可训练张量添加到所有的层的输入也许就是传播后的而只将可训练矩阵添加到输入会将张量作为添加到所有的层每个层都有各自不同的可学习允许不同模型层进行更量身定制的适应用一个独立的来编码和优化参数而不是直接优化因为它可能造成不稳定并损害性能在更新完后就不再使用了前者是直接作用在输入上后者是作用在所有层的块在计算得到和后与可训练的张量拼接起来尺寸是因为和适配器微调首先是一个层将高维度特征映射到低维特征然后过一个非线形层之后再用一个结构将低维特征映射回原来的高维特征同时也设计了结构确保了在最差的情况下能够退化为在训练时固定住原来预训练模型的参数不变只对新增的结构进行微调结合了和与类似在输入上添加了可训练的张量引进了零初始化的注意力机制和门控机制动机是和结合了随机初始化的张量和很大可能会损害预训练语言模型的语义学知识导致在训练初始阶段的微调不稳定和很高的性能损失只给个深层层添加了可学习的而不是给所有的层都添加作者认为这种方法可以更有效的微调专注于高级语义信息的语言表示低秩适配微调冻结了预训练的模型权重并将可训练的秩分解矩阵参数注入到架构的每一层中假设模型原有参数为微调后的参数为即将分解为两个低秩矩阵的乘积即其中是低秩矩阵的秩且是升维矩阵将低维的输入向量升维到高维空间是降维矩阵将高维的输出向量降维到低维空间矩阵的升维或降维作用取决于它在整个运算中的位置和作用而不仅仅是它自身的维度即的维度是这意味着它将维的输入向量变换到维的输出向量而的维度是这意味着它将维的输入向量变换到维的输出向量为什么矩阵被初始化为而矩阵正常高斯初始化全容易梯度消失因为对称性全高斯初始化会引入过大噪声所以初始化为初始化为高斯是为了在训练开始时维持网络的原有输出初始偏移为但同时也保证在真正开始学习后能够更好的收敛打破对称性会通过的方式进行缩放其中类似调整学习率所以不如固定为只调节与相比的区别在于插入位置是以残差连接的形式并联在的矩阵上有研究表明只用于表现也不错而是插入在后面推理延迟在训练完后其参数可以与原有预训练模型直接合并变回单分支结构不会引入额外的延迟而由于引入了额外的串联网络层因此会带来额外的延迟参数存储使用进行微调在训练完毕后只需要保存本身的参数而使用则要保存整个原有模型的参数模型量化模型量化是一种压缩网络参数的方式它将神经网络的参数特征图等原本用浮点表示的量值换用定点整型表示在计算过程中再将定点数据反量化回浮点数据得到结果这样可以减少模型的存储空间和计算量提高模型的运行速度可以减少内存和显存占用给模型瘦身能够提高运行速度这可以从两方面理解在适配低精度的硬件下量化模型的运算能直接用计算量化减少了单位数据的数因而可以减少计算过程中的通信量可以增大量化方法也可以称为在线量化它需要利用额外的训练数据在量化的同时结合反向传播对模型权重进行调整意在确保量化模型的精度不掉点也可以称为离线量化它是在已训练的模型上使用少量或不使用额外数据对模型量化过程进行校准可能伴有模型权重的缩放训练后动态量化不使用校准数据集直接对每一层通过量化公式进行转换就是采用这种方法训练后校正量化需要输入有代表性的数据集根据模型每一层的输入输出调整量化权重就是采用这种方法计算公式如下通常为对称量化量化前后的点是对齐的因此不需要记录零点它适合对分布良好且均值为的参数进行量化对于正负数不均匀分布的情况不够友好因此对称量化常用于对量化非对称量化量化前后点不对齐需要额外记录一个也就是零点非对称量化常用于对做量化为考虑其他更多情况需要引入一种新的量化策略块级量化块级量化最终能使量化的精度损失减少为了避免异常值的影响我们会将输入通常是神经网络的权重或激活值分割成多个块然后每个块单独做量化有单独的缩放因子和零点可以为不同的数据块选择不同的量化策略例如某些块可以用更高的位宽量化而其他块则可以用更低的位宽尽管块级量化可以提供更好的精度但由于每个块都有自己的量化参数这可能会增加计算和存储的开销量化低秩适配针对模型权重做量化采用的是对称量化算法量化过程基本与相同位量化确保每个量化仓中有相同数量的值即采用新的数据类型它是对于正态分布权重而言信息理论上最优的数据类型同时类型有助于缓解异常值的影响双量化对量化常量再次量化以节省额外内存的过程即对于量化后的数据做进一步的量化还有统一内存分页它依赖于统一内存管理自动处理和之间的页到页传输它可以保证处理无错特别是在可能耗尽内存的情况下数据类型的格点分布是均匀的然而模型的权重通常服从均值为的正态分布因此格点的分布和数据的分布不一致的格点按照正态分布的分位数截取格点分布两端稀疏中间密集格点分布与数据分布一致这样格点分配的效率就大大增加了同时精度受损也不会太大双量化将每个参数为做一个即每个计算一个由于量化后的通常以存储在数众多的情况下占用的显存也不可忽视因此对进一步量化成取的因而进一步降低了显存消耗统一内存分页',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-08-08 10:00:00',
+  postMainColor: '',
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#18171d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f9fe')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin><link rel="stylesheet" href="/css/fonts.css" media="print" onload="this.media='all'"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/rss.xml" title="可爱可倾" type="application/atom+xml">
+</head><body data-type="anzhiyu"><div id="web_bg"></div><div id="an_music_bg"></div><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><img class="loading-img nolazyload" alt="加载头像" src="/img/favicon.ico"/><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.getElementById('loading-box').classList.add("loaded");
+  },
+  initLoading: () => {
+    document.getElementById('loading-box').classList.remove("loaded")
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+setTimeout(function(){preloader.endLoading();},10000)
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.10/progress_bar/progress_bar.css"/><script async="async" src="https://cdn.cbd.int/pace-js@1.2.4/pace.min.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;:false,&quot;eventLag&quot;:false}"></script><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><div id="nav-group"><span id="blog_name"><a id="site-name" href="/" accesskey="h"><div class="title">可爱可倾</div><i class="anzhiyufont anzhiyu-icon-house-chimney"></i></a><div id="he-plugin-simple"></div><script>var WIDGET = {
+  "CONFIG": {
+    "modules": "0124",
+    "background": "2",
+    "tmpColor": "FFFFFF",
+    "tmpSize": "16",
+    "cityColor": "FFFFFF",
+    "citySize": "16",
+    "aqiColor": "E8D87B",
+    "aqiSize": "16",
+    "weatherIconSize": "24",
+    "alertIconSize": "18",
+    "padding": "10px 10px 10px 10px",
+    "shadow": "0",
+    "language": "auto",
+    "borderRadius": "20",
+    "fixed": "true",
+    "vertical": "top",
+    "horizontal": "left",
+    "left": "20",
+    "top": "7.1",
+    "key": "df245676fb434a0691ead1c63341cd94"
+  }
+}
+</script><link rel="stylesheet" href="https://widget.qweather.net/simple/static/css/he-simple.css?v=1.4.0"/><script src="https://widget.qweather.net/simple/static/js/he-simple.js?v=1.4.0"></script></span><div class="mask-name-container"><div id="name-container"><a id="page-name" href="javascript:anzhiyu.scrollToDest(0, 500)">PAGE_NAME</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 归档</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/?id=8265222461&amp;server=tencent"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page faa-parent animated-hover" href="/about/"><span> 关于</span></a></div></div></div><div id="nav-right"><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机前往一个文章" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-dice"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索🔍" accesskey="s"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span> 搜索</span></a></div><input id="center-console" type="checkbox"/><label class="widget" for="center-console" title="中控台" onclick="anzhiyu.switchConsole();"><i class="left"></i><i class="widget center"></i><i class="widget right"></i></label><div id="console"><div class="console-card-group-reward"><ul class="reward-all console-card"><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp" target="_blank"><img class="post-qr-code-img" alt="微信" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp" target="_blank"><img class="post-qr-code-img" alt="支付宝" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments"><div class="card-content"><div class="author-content-item-tips">互动</div><span class="author-content-item-title"> 最新评论</span></div><div class="aside-list"><span>正在加载中...</span></div></div></div><div class="console-card-group-right"><div class="console-card tags"><div class="card-content"><div class="author-content-item-tips">兴趣点</div><span class="author-content-item-title">寻找你感兴趣的领域</span></div></div><div class="console-card history"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-box-archiv"></i><span>文章</span></div><div class="card-archives"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="anzhiyufont anzhiyu-icon-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/09/"><span class="card-archive-list-date">九月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/03/"><span class="card-archive-list-date">三月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/02/"><span class="card-archive-list-date">二月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/11/"><span class="card-archive-list-date">十一月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/09/"><span class="card-archive-list-date">九月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">7</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/08/"><span class="card-archive-list-date">八月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">18</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/07/"><span class="card-archive-list-date">七月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/06/"><span class="card-archive-list-date">六月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">10</span><span>篇</span></div></a></li></ul></div><hr/></div></div></div><div class="button-group"><div class="console-btn-item"><a class="darkmode_switchbutton" title="显示模式切换" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-moon"></i></a></div><div class="console-btn-item" id="consoleHideAside" onclick="anzhiyu.hideAsideBtn()" title="边栏显示控制"><a class="asideSwitch"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></a></div><div class="console-btn-item" id="consoleMusic" onclick="anzhiyu.musicToggle()" title="音乐开关"><a class="music-switch"><i class="anzhiyufont anzhiyu-icon-music"></i></a></div><div class="console-btn-item" id="consoleKeyboard" onclick="anzhiyu.keyboardToggle()" title="快捷键开关"><a class="keyboard-switch"><i class="anzhiyufont anzhiyu-icon-keyboard"></i></a></div></div><div class="console-mask" onclick="anzhiyu.hideConsole()" href="javascript:void(0);"></div></div><div class="nav-button" id="nav-totop"><a class="totopbtn" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i><span id="percent" onclick="anzhiyu.scrollToDest(0,500)">0</span></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="切换"><i class="anzhiyufont anzhiyu-icon-bars"></i></a></div></div></div></nav><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original">原创</a><span class="post-meta-categories"><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-inbox post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" itemprop="url">自然语言处理</a></span><span class="article-meta tags"></span></div></div><h1 class="post-title" itemprop="name headline">微调(Fine-Tuning)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="anzhiyufont anzhiyu-icon-calendar-days post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" itemprop="dateCreated datePublished" datetime="2024-08-08T02:00:00.000Z" title="发表于 2024-08-08 10:00:00">2024-08-08</time><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-history post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" itemprop="dateCreated datePublished" datetime="2025-08-08T02:00:00.000Z" title="更新于 2025-08-08 10:00:00">2025-08-08</time></span></div><div class="meta-secondline"><span class="post-meta-separator"></span><span class="post-meta-wordcount"><i class="anzhiyufont anzhiyu-icon-file-word post-meta-icon" title="文章字数"></i><span class="post-meta-label" title="文章字数">字数总计:</span><span class="word-count" title="文章字数">6.5k</span><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-clock post-meta-icon" title="阅读时长"></i><span class="post-meta-label" title="阅读时长">阅读时长:</span><span>21分钟</span></span><span class="post-meta-separator"></span><span id="" data-flag-title="微调(Fine-Tuning)"><i class="anzhiyufont anzhiyu-icon-fw-eye post-meta-icon"></i><span class="post-meta-label" title="阅读量">阅读量:</span><span id="twikoo_visitors" title="访问量"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-spin"></i></span></span><span class="post-meta-separator">       </span><span class="post-meta-position" title="作者IP属地为天津"><i class="anzhiyufont anzhiyu-icon-location-dot"></i>天津</span><span class="post-meta-separator"></span><span class="post-meta-commentcount"><i class="anzhiyufont anzhiyu-icon-comments post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2024/08/08/NLP/FineTuning/#post-comment" tabindex="-1"><span id="twikoo-count"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-spin"></i></span></a></span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section><div id="post-top-cover"><img class="nolazyload" id="post-top-bg" src="/papercover/NLP/NLP.webp"></div></header><main id="blog-container"><div class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container" itemscope itemtype="https://blog.keaikeqing.cn/2024/08/08/NLP/FineTuning/"><header><a class="post-meta-categories" href="/categories/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" itemprop="url">自然语言处理</a><h1 id="CrawlerTitle" itemprop="name headline">微调(Fine-Tuning)</h1><span itemprop="author" itemscope itemtype="http://schema.org/Person">可爱可倾</span><time itemprop="dateCreated datePublished" datetime="2024-08-08T02:00:00.000Z" title="发表于 2024-08-08 10:00:00">2024-08-08</time><time itemprop="dateCreated datePublished" datetime="2025-08-08T02:00:00.000Z" title="更新于 2025-08-08 10:00:00">2025-08-08</time></header><h1 id="微调fine-tuning">微调(Fine-Tuning)</h1>
+<h2 id="开源基座模型">1 开源基座模型</h2>
+<p>大语言模型的训练分为两个阶段：
+（1）在海量文本语料上的无监督预训练，学习通用的语义表示和世界知识。
+（2）在小规模数据上，进行指令微调和基于人类反馈的强化学习，更好地对齐最终任务和人类偏好。
+几乎所有知识都是在预训练过程中学习到的，只需要有限的指令微调数据就可以生成高质量的回复。
+因此，基座模型的性能是至关重要的，如果基座模型的性能不够好，指令微调和强化学习也难以取得很好的效果。</p>
+<p>主流的开源大语言模型主要有三个：LLaMA、ChatGLM和BLOOM。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>模型结构</th>
+<th>位置编码</th>
+<th>激活函数</th>
+<th>layer norm</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLaMA</td>
+<td>Casual decoder</td>
+<td>RoPE</td>
+<td>SwiGLU</td>
+<td>Pre RMS Norm</td>
+</tr>
+<tr>
+<td>ChatGLM-6B</td>
+<td>Prefix decoder</td>
+<td>RoPE</td>
+<td>GeGLU</td>
+<td>Post Deep Norm</td>
+</tr>
+<tr>
+<td>Bloom</td>
+<td>Casual decoder</td>
+<td>ALiBi</td>
+<td>GeLU</td>
+<td>Pre Layer Norm</td>
+</tr>
+</tbody>
+</table>
+<h3 id="模型对比">模型对比</h3>
+<h4 id="词表扩充">1) 词表扩充</h4>
+<p>LLaMA原模型的词表大小是32000，tokenizer主要是在英文语料上进行训练的，在中文上和多语种上效果比较差。</p>
+<ol type="1">
+<li>LLaMA模型是在以英文为主的拉丁语系语料上进行训练的，训练语料不包含中文；</li>
+<li>与tokenizer有关，词表规模小，可能将一个汉字切分为多个token，编码效率低，模型学习难度大。</li>
+</ol>
+<p>扩展中文词表后，单个汉字倾向于被切分为1个token，避免了一个汉字被切分为多个token的问题，提升了中文编码效率。</p>
+<ol type="1">
+<li>在中文语料上使用Sentence Piece训练一个中文tokenizer。</li>
+<li>将中文tokenizer与原始的 LLaMA
+tokenizer合并起来，通过组合二者的词汇表，最终获得一个合并的tokenizer，称为Chinese
+LLaMA tokenizer。</li>
+<li>为了适应新的tokenizer，将transformer模型的embedding矩阵从<span
+class="math inline">\(V \times h\)</span> 扩展到 <span
+class="math inline">\(V&#39; \times
+h\)</span>，新加入的中文token附加到原始embedding矩阵的末尾，确保原始词表表的embedding矩阵不受影响。</li>
+<li>在中文语料上进一步预训练，冻结和固定transformer的模型参数，只训练embedding矩阵，学习新加入中文token的词向量表示，同时最小化对原模型的干扰。</li>
+<li>在指令微调阶段，可以放开全部模型参数进行训练。</li>
+</ol>
+<h4 id="模型结构">2) 模型结构</h4>
+<p>主流模型都采用decoder-only结构，其中LLaMA和BLOOM采用了casual
+decoder，ChatGLM采用了prefix decoder。</p>
+
+      <div style="text-align: center;">
+        <img src="./images/Model_Structure.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/Model_Structure.webp" style="display: block; margin: 0 auto; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图1：模型结构</span>
+      </div>
+    
+<ol type="1">
+<li>casual
+decoder：采用<strong>单向注意力</strong>掩码，以确保每个输入标记只能关注过去的标记和它本身。</li>
+<li>prefix
+decoder：对前缀标记执行<strong>双向注意力</strong>，并仅对生成的标记执行单向注意力。这样，与encoder-decoder类似，可以双向编码前缀序列并自回归的逐个预测输出标记，其中在编码和解码阶段共享相同的参数。</li>
+<li>attention mask不同，prefix LM的prefix部分的token互相能看到，causal
+LM严格遵守只有后面的token才能看到前面的token的规则。</li>
+<li>prefix decoder-only结构的ChatGLM存在一个劣势：训练效率低。causal
+decoder结构会在所有的token上计算损失，而prefix
+decoder只会在输出上计算损失，而不计算输入上的损失。在有相同数量的训练tokens的情况下，prefix
+decoder要比causal
+decoder的效果差，因为训练过程中实际用到的tokens数量要更少。</li>
+</ol>
+<p><strong>注</strong>：ChatGPT的成功已经证明了causal
+decoder结构的大语言模型可以获得非常好的few-shot和zero-shot生成能力，通过指令微调可以进一步激发模型的能力。至于prefix
+decoder结构的大语言模型能否获得相当的few-shot和zero-shot能力还缺少足够的验证。
+(1)
+zero-shot：训练集中没有某个类别的样本，但是如果我们可以学到一个映射，这个映射好到即使在训练的时候没看到这个类，但是在遇到的时候依然能通过这个映射得到这个新类的特征。
+(2)
+one-shot：模型在只见过一个训练样本的情况下，学习并完成新的任务。常见于图像识别领域。
+(3)
+few-shot：模型在见过少量（通常是几个到几十个）训练样本的情况下，学习并完成新的任务。</p>
+<p><strong>Why decoder-only？</strong></p>
+<p>Encoder
+在抽取序列中某一个词的特征时能够看到整个序列中所有的信息，即上文和下文同时看到。主要作用是从输入序列中抽取特征，形成一个表示序列的上下文向量；
+Decoder 中因为有 mask
+机制的存在，使得它在编码某一个词的特征时只能看到自身和它之前的文本信息。主要作用是根据Encoder生成的上下文向量和之前已经生成的词，逐步生成目标序列中的每个词。</p>
+<ol type="1">
+<li>用过去研究的经验说话，decoder-only的泛化性能更好</li>
+<li>decoder-only支持一直复用KV-Cache，对多轮对话更友好</li>
+<li>预训练任务难度问题，纯粹的decoder-only架构+next token
+predicition预训练，每个位置所能接触的信息比其他架构少，要预测下一个token难度更高，当模型足够大，数据足够多的时候，decoder-only模型学习通用表征的上限更高</li>
+<li>双向attention的注意力矩阵容易退化为低秩状态，而causal
+attention的注意力矩阵是下三角矩阵，必然是满秩的，建模能力更强；</li>
+<li>causal
+attention具有隐式的位置编码功能，打破了transformer的位置不变性，而带有双向attention的模型，如果不带位置编码，双向attention的部分token可以对换也不改变表示，对语序的区分能力天生较弱。</li>
+<li>Encoder-Decoder架构之所以能够在某些场景下表现更好，大概只是因为它多了一倍参数。</li>
+</ol>
+<h4 id="layer-normalization">3) Layer Normalization</h4>
+<p>在统计学中，协变量偏移指的是源域（S）和目标域（T）边缘分布的不一致，但是它们的条件分布却是相同的。对于深度学习来说，指的是训练集和测试集的输入特征分布不同（例如训练数据和测试数据拍摄条件不同），但在给定特征时，输出的分布是一致的。</p>
+<ol type="1">
+<li>用训练集得到的模型在测试集上做性能评估，得到的不是模型的真实水平</li>
+<li>训练集和测试集分布差异过大，我们训练得到的不是真实模型</li>
+</ol>
+<p>因此在机器学习中，我们期望数据是<strong>独立同分布</strong>的，这要求训练集和测试集的样本都是从同一个分布独立采样而来。
+但是在深层神经网络的训练中，当中间神经层的前一层参数发生改变时，该层的输入分布也会发生改变，也就是存在内部协变量偏移ICS问题。中间的神经层需要不断适应这种变化，这会降低整个网络的收敛速度。</p>
+<p>可以通过固定每一层网络的输入值分布来减缓ICS问题:</p>
+<ol type="1">
+<li>白化：通过调整输入数据的分布来减少协变量偏移的影响，比如PCA。即标准正态分布+去除相关性(协方差矩阵奇异值分解)。
+1）白化过程计算成本太高，如PCA中需要计算协方差矩阵，并在每一轮训练的每一层都执行该运算；
+2）白化过程改变了网络中每一层的分布，因此改变了网络层中本身数据的表达能力，底层网络学习到的参数信息会被白化操作丢失。</li>
+<li>归一化：使得样本处于同一分布，且可以解决每批训练数据分布不同的问题，而且Normalization包含线性变换操作，可以让数据尽可能恢复本身的表达能力。即转换为均值为0，方差为1的标准正态分布。主要操作有：去均值、除以标准差、线性变换(缩放和平移)。</li>
+</ol>
+<p>常用的Normalization方法有Batch Normalization、Layer
+Normalization、Instance Normalization、Group
+Normalization等。主要区别在于操作的特征维度不同。基本计算公式如下：</p>
+<p><span class="math display">\[
+y = \gamma \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta
+\]</span></p>
+<p>其中，<span class="math inline">\(\gamma\)</span>和<span
+class="math inline">\(\beta\)</span>是可学习的参数，<span
+class="math inline">\(\mu\)</span>和<span
+class="math inline">\(\sigma\)</span>是均值和方差，<span
+class="math inline">\(\epsilon\)</span>是一个很小的数，防止分母为0。</p>
+<p>假定输入数据的维度是<span class="math inline">\((N, C, H,
+W)\)</span>，其中<span class="math inline">\(N\)</span>是batch
+size，<span class="math inline">\(C\)</span>是通道数，<span
+class="math inline">\(H\)</span>和<span
+class="math inline">\(W\)</span>是高和宽。 <strong>Batch
+Normalization：对整个批次的数据进行归一化。</strong> 在<span
+class="math inline">\(N H W\)</span>维度上求均值和方差，保留<span
+class="math inline">\(C\)</span>维度，对每个通道进行归一化。</p>
+<p><span class="math display">\[
+\mu_c = \frac{1}{NHW} \sum_{n=1}^{N} \sum_{h=1}^{H} \sum_{w=1}^{W}
+x_{nchw}\\
+\sigma_c^2 = \frac{1}{NHW} \sum_{n=1}^{N} \sum_{h=1}^{H} \sum_{w=1}^{W}
+(x_{nchw} - \mu_c)^2 + \epsilon\\
+\]</span></p>
+<p><strong>Layer
+Normalization：对单个样本的所有特征进行归一化。</strong> 在<span
+class="math inline">\(C H W\)</span>维度上求均值和方差，保留<span
+class="math inline">\(N\)</span>维度。</p>
+<p><span class="math display">\[
+\mu_{n} = \frac{1}{CWH} \sum_{c=1}^{C} \sum_{h=1}^{H} \sum_{w=1}^{W}
+x_{nchw}\\
+\sigma_{n}^2 = \frac{1}{CWH} \sum_{c=1}^{C} \sum_{h=1}^{H}
+\sum_{w=1}^{W} (x_{nchw} - \mu_n)^2 + \epsilon\\
+\]</span></p>
+<p><strong>Instance
+Normalization：对每个样本的每个通道独立进行归一化。</strong> 在<span
+class="math inline">\(H W\)</span>维度上求均值和方差，保留<span
+class="math inline">\(N C\)</span>维度。在channel内部求均值和标准差</p>
+<p><span class="math display">\[
+\mu_{nc} = \frac{1}{HW} \sum_{h=1}^{H} \sum_{w=1}^{W} x_{nchw}\\
+\sigma_{nc}^2 = \frac{1}{HW} \sum_{h=1}^{H} \sum_{w=1}^{W} (x_{nchw} -
+\mu_{nc})^2 + \epsilon\\
+\]</span></p>
+<p><strong>Group
+Normalization：对每个样本的特定组别的特征进行归一化。</strong>
+将通道分为若干组，每组进行归一化。各组channel用其对应的归一化参数独立地归一化。</p>
+<p><span class="math display">\[
+\mu_{ng} = \frac{1}{(C/G)HW} \sum_{c=1}^{C/G} \sum_{h=1}^{H}
+\sum_{w=1}^{W} x_{nchw}\\
+\sigma_{ng}^2 = \frac{1}{(C/G)HW} \sum_{c=1}^{C/G} \sum_{h=1}^{H}
+\sum_{w=1}^{W} (x_{nchw} - \mu_{ng})^2 + \epsilon\\
+\]</span></p>
+<p><strong>总结</strong>：</p>
+<ol type="1">
+<li>Batch Normalization：适用于CV领域
+<ol type="1">
+<li>处理序列数据时表现差，因为序列数据的维度是变化的，而BN是在固定维度上进行归一化的，因此不适用于RNN、LSTM等序列模型。</li>
+<li>小batch size时效果差，因为每个batch的统计特性会有较大波动</li>
+</ol></li>
+<li>Layer Normalization：适用于RNN、LSTM等序列模型
+<ol type="1">
+<li>适用于序列数据，因为LN是在每个样本上进行归一化的，不受batch
+size影响</li>
+<li>适用于序列数据，因为LN是在序列长度上对每个样本进行归一化</li>
+<li>对单个样本的所有特征进行统一归一化处理，如果这些特征来自不同的类别或具有不同的性质，可能会降低模型的表达能力。</li>
+<li>不适应输入变化很大的数据</li>
+</ol></li>
+<li>Instance Normalization：图像的风格迁移
+<ol type="1">
+<li>对每个样本的每个特征进行归一化，因此它可以捕捉到更多的细节信息</li>
+<li>可能会过度强调细节信息，忽视了更宏观的信息</li>
+<li>计算成本较高，计算成本比BN和LN要高</li>
+<li>不适应通道之间的相关性较强数据</li>
+</ol></li>
+<li>Group Normalization：适用于占用显存比较大的任务，如图像分割
+<ol type="1">
+<li>既可以捕获到Batch的统计特性，又可以捕获到样本的细节信息，是BN和IN的折中方案</li>
+<li>对Batch size不敏感</li>
+<li>性能取决于组的大小，计算成本比BN和LN要高</li>
+</ol></li>
+</ol>
+<p>LLM采用Layer Normalization，而又可以细分为以下几种：</p>
+<p><strong>按方法分类：</strong></p>
+<ol type="1">
+<li>LayerNorm：对单个样本的所有特征进行归一化(标准正态分布+线性变换)
+<span class="math display">\[
+y = \gamma \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta
+\]</span></li>
+<li>RMSNorm：通过实验证明re-center操作并不重要，移除了LayerNorm中的均值项，可以看作LayerNorm在均值为0时的一个特例。(无需计算均值，提高了训练速度)
+<span class="math display">\[
+y = \gamma \frac{x}{RMS(x)}\\
+RMS(x) = \sqrt{\frac{1}{d} \sum_{i=1}^{d} x_i^2}
+\]</span></li>
+<li>DeepNorm:
+不仅用作标准化，还作为残差连接的一部分，将前一层的输出与标准化后的输出相加。可以缓解爆炸式模型更新的问题。
+<span class="math display">\[
+x_{l+1}=LN(\alpha x_l + G_l(x_l, \theta_l))
+\]</span></li>
+</ol>
+<p><strong>按位置分类：</strong></p>
+
+      <div style="text-align: center;">
+        <img src="./images/LN_Pos.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/LN_Pos.webp" style="display: block; margin: 0 auto; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图2：Layer Normalization Position</span>
+      </div>
+    
+<ol type="1">
+<li>Post Layer Norm：在每个子层的输出后应用LayerNorm。 <strong><span
+class="math inline">\(x_{l+1} = LN(x_l +
+SubLayer(x_l))\)</span></strong>
+<ol type="1">
+<li>Post Norm结构的最终效果是要好于Pre Norm的，只不过Post
+Norm要达到自己的最优效果，需要加Warmup等训练技巧，如果和Pre
+Norm用一样的训练配置则效果不如Pre Norm。</li>
+<li>上限高于Pre Norm，但是需要更多的训练技巧。</li>
+<li>在深层的梯度范式逐渐增大，导致使用Post
+Norm的深层Transformer容易出现训练不稳定的问题</li>
+</ol></li>
+<li>Pre Layer Norm：在每个子层的输入前应用LayerNorm。 <strong><span
+class="math inline">\(x_{l+1} = SubLayer(LN(x_l)) +
+x_l\)</span></strong>
+<ol type="1">
+<li>同一设置下，Pre Norm结构往往更容易训练，但是最终效果通常不如Post
+Norm</li>
+<li>无形地增加了模型的宽度而降低了模型的深度，而在深度学习中深度通常比宽度更重要。也就是说Pre
+Norm的深度有“水分”，一个L层的Pre Norm模型其实际等效层数不如L层的Post
+Norm模型，层数少就会导致效果变差。</li>
+<li>相比于Post Norm，Pre Norm在深层的梯度范式近似相等，所以使用Pre
+Norm的深层Transformer训练更加稳定</li>
+</ol></li>
+<li>Sandwich Norm：结合了Pre Norm和Post
+Norm的优点，同时在输入前和输出后应用LayerNorm。 <strong><span
+class="math inline">\(x_{l+1} = x_l +
+LN(SubLayer(LN(x_l)))\)</span></strong>
+<ol type="1">
+<li>有效控制每一层的激活值，避免它们过大，模型能够更好地学习数据特征</li>
+<li>训练不稳定，可能会导致训练崩溃</li>
+</ol></li>
+</ol>
+<h4 id="激活函数">4) 激活函数</h4>
+<p>FFN通常先将向量从维度d升维到中间维度4d，再从4d降维到d。计算公式如下：</p>
+<p><span class="math display">\[
+FFN(x) = f(xW_1 + b_1)W_2 + b_2
+\]</span></p>
+<p>其中，f(x)是非线性激活函数。广泛使用的激活函数有ReLU、GELU、Swish等。</p>
+<p><span class="math display">\[
+ReLU(x) = max(0, x)\\
+GELU(x) = x \cdot \phi(x)\\
+Swish(x) = x \cdot \sigma(\beta x)\\
+\]</span></p>
+<p>其中，<span
+class="math inline">\(\phi(x)\)</span>是标准正态分布的累积分布函数，<span
+class="math inline">\(\sigma(x)\)</span>是sigmoid函数。</p>
+<p><span class="math display">\[
+\phi(x) = \frac{1}{2} \left(1 +
+erf\left(\frac{x}{\sqrt{2}}\right)\right)\\
+\sigma(x) = \frac{1}{1 + e^{-x}}
+\]</span></p>
+<p>通过引入线性门控单元（GLU）来增强模型的非线性能力，FFN额外增加了一个权重矩阵，即下式中的V，共有三个权重矩阵，获得了更好的模型性能。</p>
+<p><span class="math display">\[
+\begin{matrix}
+FFN(x) = (f(xW_1) \otimes xV)W_2\\
+ReGLU(x) = ReLU(xW) \otimes xV\\
+GeGLU(x) = GELU(xW) \otimes xV\\
+SwiGLU(x) = Swish_{\beta}(xW) \otimes xV\\  
+\end{matrix}
+\]</span></p>
+<h2 id="高效参数微调方法">2 高效参数微调方法</h2>
+<p>大语言模型的参数量进行全量微调成本很高。高效参数微调（PEFT）在微调大模型时只训练一小部分参数。高效参数微调方法有以下几方面优点：</p>
+<ol type="1">
+<li>显存占用少，对硬件资源要求低</li>
+<li>训练速度快，耗时更短</li>
+<li>更低的存储成本，不同的任务可以共享大部分的权重参数</li>
+<li>可能会有更好的模型性能，减轻了过拟合问题</li>
+</ol>
+<h3 id="提示微调prompt-tuning">2.1 提示微调(Prompt Tuning)</h3>
+<p>prompt
+tuning原本的含义指的是通过修改输入prompt来获得更好的模型效果。这里的提示是“硬提示（hard
+prompt）”。我们直接修改输入prompt，输入prompt是不可导的。例如，我们可以将输入prompt从“What
+is the capital of France?”修改为“Question: What is the capital of
+France? Answer:”，引导模型生成想要的输出。</p>
+<p>与“硬提示”相对应，“软提示微调（soft prompt
+tuning）”将一个可训练张量与输入文本的embeddings拼接起来，这个可训练张量可以通过反向传播来优化，进而提升目标任务的模型效果。这里的可训练张量可以理解为prompt文本对应的embedding，是一个soft
+prompt。<strong>冻结大模型原始的参数，只训练这个新增加的prompt张量</strong>。prompt
+tuning随着基座模型参数量的增大效果会变好。 尺寸：<span
+class="math inline">\([virtual\_token\_num, embd\_dim]\)</span></p>
+<p><strong>实际上都只是改变的输入文本，不改变LLM
+Model参数</strong>，但是硬提示是通过手动设计的自然语言提示来引导模型，通过改变输入文本来间接影响嵌入表示，而软提示通过<strong>可训练</strong>的提示嵌入直接影响输入表示，能够进行优化和微调，适用于更复杂和多样化的任务。</p>
+<h2 id="前缀微调pre-fix-tuning">2.2 前缀微调(Pre-fix Tuning)</h2>
+<p>prefix tuning与prompt
+tuning相似，将一个特定任务的张量添加到输入，这个张量是可训练的，保持预训练模型的参数不变。主要区别如下：</p>
+<ol type="1">
+<li>prefix
+tuning将prefix参数（可训练张量）添加到所有的transformer层的输入(也许就是传播后的embedding？)，而prompt
+tuning只将可训练矩阵添加到输入embedding。prefix
+tuning会将prefix张量作为past_key_value添加到所有的transformer层。<strong>每个transformer层都有各自不同的可学习prefix，允许不同模型层进行更量身定制的适应。</strong></li>
+<li>用一个独立的FFN来编码和优化prefix参数，而不是直接优化soft
+prompt，因为它可能造成不稳定并损害性能。在更新完soft
+prompt后，就不再使用FFN了。</li>
+</ol>
+<p>前者是直接作用在输入embedding上，后者是作用在所有transformer层的self-attention块，在计算得到K和V后，与可训练的prefix张量拼接起来。</p>
+<p>尺寸：<span class="math inline">\([virtual\_token\_num, 2 \times
+layer\_num \times hidden\_size]\)</span> (2是因为K和V)</p>
+<h2 id="适配器微调adapter-tuning">2.3 适配器微调(Adapter Tuning)</h2>
+
+      <div style="text-align: center;">
+        <img src="./images/Adapter-Tuning.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/Adapter-Tuning.webp" style="display: block; margin: 0 auto; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图3：Adapter Tuning</span>
+      </div>
+    
+<p>首先是一个 down-project
+层将高维度特征映射到低维特征，然后过一个非线形层之后，再用一个
+up-project 结构将低维特征映射回原来的高维特征； 同时也设计了
+skip-connection 结构，确保了在最差的情况下能够退化为 identity
+<strong>在训练时，固定住原来预训练模型的参数不变，只对新增的 Adapter
+结构进行微调</strong></p>
+<h3 id="llama-adapter">2.3.1 LLaMA-adapter</h3>
+<p>LLaMA-adapter结合了prefix tuning和adapter。与prefix
+tuning类似，LLaMA-adapter在输入embed上添加了可训练的prompt张量。</p>
+<ol type="1">
+<li>LLaMA-adapter引进了零初始化的注意力机制和门控机制。动机是adapter和prefix
+tuning结合了随机初始化的张量（prefix prompts和adapter
+layers）很大可能会损害预训练语言模型的语义学知识，导致在训练初始阶段的微调不稳定和很高的性能损失。</li>
+<li>LLaMA-adapter只给L个深层transformer层添加了可学习的adaption
+prompts，而不是给所有的transformer层都添加。作者认为，这种方法可以更有效的微调专注于高级语义信息的语言表示。</li>
+</ol>
+<h2 id="低秩适配微调low-rank-adaptation-lora">2.4 低秩适配微调(Low-Rank
+Adaptation, LoRA)</h2>
+
+      <div style="text-align: center;">
+        <img src="./images/LoRA.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/LoRA.webp" style="display: block; margin: 0 auto; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图4：LoRA</span>
+      </div>
+    
+<p>冻结了预训练的模型权重，并将可训练的秩分解矩阵(LoRA参数)注入到
+Transformer 架构的每一层中。</p>
+<p>假设模型原有参数为<span class="math inline">\(W_0 \in \mathbb{R}^{d
+\times k}\)</span>，微调后的参数为<span class="math inline">\(W \in
+\mathbb{R}^{d \times k}\)</span>，即</p>
+<p><span class="math display">\[
+W = W_0 + \Delta W
+\]</span></p>
+<p>LoRA将<span class="math inline">\(\Delta
+W\)</span>分解为两个低秩矩阵的乘积，即：</p>
+<p><span class="math display">\[
+\Delta W = B \cdot A
+\]</span></p>
+<p>其中，<span class="math inline">\(B \in \mathbb{R}^{d \times
+r}\)</span>，<span class="math inline">\(A \in \mathbb{R}^{r \times
+k}\)</span>，<span
+class="math inline">\(r\)</span>是低秩矩阵的秩，且<span
+class="math inline">\(r \ll min(d,k)\)</span>。</p>
+<p><code>F.linear(input, self.weight, self.bias) + (self.lora_dropout(input) @ self.lora_right_weight @ self.lora_left_weight) * self.lora_scaling</code></p>
+<ol type="1">
+<li><span
+class="math inline">\(B\)</span>是升维矩阵，将低维的输入向量升维到高维空间，<span
+class="math inline">\(A\)</span>是降维矩阵，将高维的输出向量降维到低维空间。
+矩阵的”升维”或”降维”作用取决于它在整个运算中的位置和作用,而不仅仅是它自身的维度。即<span
+class="math inline">\(B\)</span>的维度是<span class="math inline">\(d
+\times r\)</span>，这意味着它将<span
+class="math inline">\(r\)</span>维的输入向量变换到<span
+class="math inline">\(d\)</span>维的输出向量。而<span
+class="math inline">\(A\)</span>的维度是<span class="math inline">\(r
+\times k\)</span>，这意味着它将<span
+class="math inline">\(d\)</span>维的输入向量变换到<span
+class="math inline">\(r\)</span>维的输出向量。</li>
+<li>为什么矩阵B被初始化为0，而矩阵A正常高斯初始化
+全0容易梯度消失(因为对称性)，全高斯初始化会引入过大噪声，所以B初始化为0，A初始化为高斯，是为了在训练开始时维持网络的原有输出(初始偏移为0)，但同时也保证在真正开始学习后能够更好的收敛(打破对称性)。</li>
+<li><span class="math inline">\(\Delta W\)</span> 会通过<span
+class="math inline">\(\frac{\alpha}{r}\)</span>的方式进行缩放，其中<span
+class="math inline">\(\alpha\)</span>类似调整学习率，所以不如固定为1，只调节<span
+class="math inline">\(r\)</span>。</li>
+<li>与adapter tuning相比，LoRA的区别在于：
+<ol type="1">
+<li>插入位置。LoRA是以残差连接的形式”并联”在Transformer的Q,K,V,O矩阵上(有研究表明只用于QV表现也不错)；而Adapter是插入在Feed-forward
+Layer后面。</li>
+<li>推理延迟。LoRA在训练完后其参数可以与原有预训练模型直接合并，变回单分支结构，不会引入额外的延迟；而Adapter由于引入了额外的串联网络层，因此会带来额外的延迟。</li>
+<li>参数存储。使用LoRA进行微调，在训练完毕后只需要保存LoRA本身的参数；而使用Adapter则要保存整个原有模型的参数。</li>
+</ol></li>
+</ol>
+<h3 id="模型量化quantization">2.4.1 模型量化(Quantization)</h3>
+<p>模型量化是一种压缩网络参数的方式，它将神经网络的参数(weight)、特征图(activation)等原本用浮点表示的量值换用定点(整型)表示，在计算过程中，再将定点数据反量化回浮点数据，得到结果。这样可以减少模型的存储空间和计算量，提高模型的运行速度。</p>
+<ol type="1">
+<li>可以减少内存和显存占用，给模型瘦身</li>
+<li>能够提高运行速度，这可以从两方面理解
+<ol type="1">
+<li>在适配低精度的硬件下，量化模型的运算能直接用 int8 GEMM kernel
+计算</li>
+<li>量化减少了单位数据的 bit 数，因而可以减少计算过程中的 IO 通信量</li>
+</ol></li>
+<li>可以增大 batch size</li>
+</ol>
+<h4 id="量化方法">量化方法</h4>
+<ol type="1">
+<li>QAT(Quant-Aware Training)也可以称为在线量化(On
+Quantization)。它需要利用额外的训练数据，在量化的同时结合反向传播对模型权重进行调整，意在确保量化模型的精度不掉点</li>
+<li>PTQ (Post Training Quantization)也可以称为离线量化(Off
+Quantization)。它是在已训练的模型上，使用少量或不使用额外数据，对模型量化过程进行校准，可能伴有模型权重的缩放。
+<ol type="1">
+<li>训练后动态量化(PostDynamic
+Quantization)，不使用校准数据集，直接对每一层 layer
+通过量化公式进行转换，QLoRA 就是采用这种方法</li>
+<li>训练后校正量化(Post Calibration
+Quantization)，需要输入有代表性的数据集，根据模型每一层 layer
+的输入输出调整量化权重，GPTQ 就是采用这种方法。</li>
+</ol></li>
+</ol>
+<p>计算公式如下：</p>
+<p><span class="math display">\[
+\begin{align}
+{quantized\_value} =
+{round}(\frac) + {zero\_point}\\
+{float\_value} = ({quantized\_value} - {zero\_point}) \times {scale}
+\end{align}
+\]</span></p>
+<p>通常 scale 为 <span
+class="math inline">\(\frac{max(abs(float\_value))}{2^{bit\_width-1}-1}\)</span></p>
+
+      <div style="text-align: center;">
+        <img src="./images/Quant.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/Quant.webp" style="display: block; margin: 0 auto; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图5：Quantization</span>
+      </div>
+    
+<p><strong>对称量化</strong> 量化前后的 0
+点是对齐的，因此不需要记录零点。它适合对分布良好且均值为 0
+的参数进行量化（对于正负数不均匀分布的情况不够友好），因此对称量化常用于对
+weight 量化 <strong>非对称量化</strong> 量化前后 0
+点不对齐，需要额外记录一个 offset，也就是零点。非对称量化常用于对
+activation 做量化</p>
+<p>为考虑其他更多情况，需要引入一种新的量化策略：<strong>Block-wise
+quantization(块级量化)，块级量化最终能使量化的精度损失减少</strong>。为了避免异常值(outlier)的影响，我们会将输入tensor(通常是神经网络的权重或激活值)分割成多个块(block)，然后每个块(block)单独做量化，有单独的缩放因子scale和零点zero</p>
+<ol type="1">
+<li>可以为不同的数据块选择<strong>不同的量化策略</strong>。例如，某些块可以用更高的位宽量化，而其他块则可以用更低的位宽</li>
+<li>尽管块级量化可以提供更好的精度，但由于每个块都有自己的量化参数，这可能会<strong>增加计算和存储的开销</strong></li>
+</ol>
+<h3 id="量化低秩适配qlora">2.4.2 量化低秩适配(QLoRA)</h3>
+<p>QLoRA
+针对模型权重(weight)做量化，采用的是对称量化算法，量化过程基本与LoRA相同:</p>
+<ol type="1">
+<li>4位NormalFloat量化：确保每个量化仓中有相同数量的值 即采用新的 NF
+(NormalFloat)数据类型，它是对于正态分布权重而言信息理论上最优的数据类型，同时，NF
+类型有助于缓解异常值的影响</li>
+<li>双量化：对量化常量再次量化以节省额外内存的过程 即Double
+Quant，对于量化后的 scale 数据做进一步的量化</li>
+<li>QLoRa还有统一内存分页：它依赖于NVIDIA统一内存管理，自动处理CPU和GPU之间的页到页传输，它可以保证GPU处理无错，特别是在GPU可能耗尽内存的情况下</li>
+</ol>
+<h4 id="nf数据类型">NF数据类型</h4>
+<p>int4 的格点分布是均匀的，然而模型的权重通常服从均值为 0
+的正态分布，因此格点的分布和数据的分布不一致。 NF4
+的格点按照正态分布的分位数截取，格点分布两端稀疏，中间密集，格点分布与数据分布一致。这样格点分配的效率就大大增加了，同时精度受损也不会太大。</p>
+<h4 id="双量化double-quant">双量化(Double Quant)</h4>
+<p>QLoRA 将每 64 个参数为做一个 block，即 block_size = 64，每个 block
+计算一个 Scale。 由于量化后的 Scale 通常以 FP32 存储，在 block
+数众多的情况下，Scale 占用的显存也不可忽视。 因此，QLoRA 对 Scale
+进一步量化成 FP8，取 Double Quant 的 block size =
+256，因而进一步降低了显存消耗。</p>
+<h4 id="统一内存分页">统一内存分页</h4>
+</article><div class="post-copyright"><div class="copyright-cc-box"><i class="anzhiyufont anzhiyu-icon-copyright"></i></div><div class="post-copyright__author_box"><a class="post-copyright__author_img" href="/" title="头像"><img class="post-copyright__author_img_back" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" title="头像" alt="头像"><img class="post-copyright__author_img_front" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" title="头像" alt="头像"></a><div class="post-copyright__author_name">可爱可倾</div><div class="post-copyright__author_desc">花开有期，云舒有意</div></div><div class="post-copyright__post__info"><a class="post-copyright__original" title="该文章为原创文章，注意版权协议" href="https://blog.keaikeqing.cn/2024/08/08/NLP/FineTuning/">原创</a><a class="post-copyright-title"><span onclick="rm.copyPageUrl('https://blog.keaikeqing.cn/2024/08/08/NLP/FineTuning/')">微调(Fine-Tuning)</span></a></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div class="rewardLeftButton"><div class="post-reward" onclick="anzhiyu.addRewardMask()"><div class="reward-button button--animated" title="赞赏作者"><i class="anzhiyufont anzhiyu-icon-hand-heart-fill"></i>打赏作者</div><div class="reward-main"><div class="reward-all"><span class="reward-title">感谢你赐予我前进的力量</span><ul class="reward-group"><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul><a class="reward-main-btn" href="/about/#about-reward" target="_blank"><div class="reward-text">赞赏者名单</div><div class="reward-dec">因为你们的支持让我意识到写文章的价值🙏</div></a></div></div></div><div id="quit-box" onclick="anzhiyu.removeRewardMask()" style="display: none"></div></div><div class="shareRight"><div class="share-link mobile"><div class="share-qrcode"><div class="share-button" title="使用手机访问这篇文章"><i class="anzhiyufont anzhiyu-icon-qrcode"></i></div><div class="share-main"><div class="share-main-all"><div id="qrcode" title="https://blog.keaikeqing.cn/2024/08/08/NLP/FineTuning/"></div><div class="reward-dec">使用手机访问这篇文章</div></div></div></div></div><div class="share-link weibo"><a class="share-button" target="_blank" href="https://service.weibo.com/share/share.php?title=微调(Fine-Tuning)&amp;url=https://blog.keaikeqing.cn/2024/08/08/NLP/FineTuning/&amp;pic=/papercover/NLP/NLP.webp" rel="external nofollow noreferrer noopener"><i class="anzhiyufont anzhiyu-icon-weibo"></i></a></div><script>function copyCurrentPageUrl() {
+  var currentPageUrl = window.location.href;
+  var input = document.createElement("input");
+  input.setAttribute("value", currentPageUrl);
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  document.body.removeChild(input);
+}</script><div class="share-link copyurl"><div class="share-button" id="post-share-url" title="复制链接" onclick="copyCurrentPageUrl()"><i class="anzhiyufont anzhiyu-icon-link"></i></div></div></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.keaikeqing.cn" target="_blank">可爱可倾</a>！</span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__box"><div class="post-meta__box__tag-list"></div></div></div><div class="post_share"><div class="social-share" data-image="/papercover/Android/Android.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"/><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/08/08/NLP/FlashAttention/"><img class="prev-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/NLP/NLP.webp" onerror="onerror=null;src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Flash Attention</div></div></a></div><div class="next-post pull-right"><a href="/2024/08/08/NLP/FLOPs/"><img class="next-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/NLP/NLP.webp" onerror="onerror=null;src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LLM 参数量及 FLOPs 计算</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="anzhiyufont anzhiyu-icon-comments"></i><span> 评论</span></div><div class="comment-randomInfo"><a onclick="anzhiyu.addRandomCommentInfo()" href="javascript:void(0)">匿名评论</a><a href="/privacy" style="margin-left: 4px">隐私政策</a></div><div class="comment-switch"><span class="first-comment">Twikoo</span><span id="switch-btn"></span><span class="second-comment">Giscus</span></div><div class="comment-tips" id="comment-tips"><span>✅ 你无需删除空行，直接评论以获取最佳展示效果</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div><div><div id="giscus-wrap"></div></div></div></div><div class="comment-barrage"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="author-info__sayhi" id="author-info__sayhi" onclick="anzhiyu.changeSayHelloText()"></div><div class="author-info-avatar"><img class="avatar-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="avatar"/><div class="author-status"><img class="g-status" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/author_status.webp" alt="status"/></div></div><div class="author-info__description"><div style="line-height:1.38; margin:0.6rem 0; text-align:center; color:rgba(255, 255, 255, 0.8);">让每一瞬间都散发可爱的光</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/"><h1 class="author-info__name">可爱可倾</h1><div class="author-info__desc">花开有期，云舒有意</div></a><div class="card-info-social-icons is-center"><a class="social-icon faa-parent animated-hover" href="https://github.com/keaikeqing" target="_blank" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a><a class="social-icon faa-parent animated-hover" href="https://space.bilibili.com/474502279" target="_blank" title="BiliBili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a></div></div></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bullhorn anzhiyu-shake"></i><span>公告</span></div><div class="announcement_content">愿你的世界如花般美好，似云般自由~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bars"></i><span>文章目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BE%AE%E8%B0%83fine-tuning"><span class="toc-number">1.</span> <span class="toc-text">微调(Fine-Tuning)</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E6%BA%90%E5%9F%BA%E5%BA%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.1.</span> <span class="toc-text">1 开源基座模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E5%AF%B9%E6%AF%94"><span class="toc-number">1.1.1.</span> <span class="toc-text">模型对比</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%8D%E8%A1%A8%E6%89%A9%E5%85%85"><span class="toc-number">1.1.1.1.</span> <span class="toc-text">1) 词表扩充</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.1.2.</span> <span class="toc-text">2) 模型结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#layer-normalization"><span class="toc-number">1.1.1.3.</span> <span class="toc-text">3) Layer Normalization</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0"><span class="toc-number">1.1.1.4.</span> <span class="toc-text">4) 激活函数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E6%95%88%E5%8F%82%E6%95%B0%E5%BE%AE%E8%B0%83%E6%96%B9%E6%B3%95"><span class="toc-number">1.2.</span> <span class="toc-text">2 高效参数微调方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E7%A4%BA%E5%BE%AE%E8%B0%83prompt-tuning"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 提示微调(Prompt Tuning)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BC%80%E5%BE%AE%E8%B0%83pre-fix-tuning"><span class="toc-number">1.3.</span> <span class="toc-text">2.2 前缀微调(Pre-fix Tuning)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%82%E9%85%8D%E5%99%A8%E5%BE%AE%E8%B0%83adapter-tuning"><span class="toc-number">1.4.</span> <span class="toc-text">2.3 适配器微调(Adapter Tuning)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#llama-adapter"><span class="toc-number">1.4.1.</span> <span class="toc-text">2.3.1 LLaMA-adapter</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8E%E7%A7%A9%E9%80%82%E9%85%8D%E5%BE%AE%E8%B0%83low-rank-adaptation-lora"><span class="toc-number">1.5.</span> <span class="toc-text">2.4 低秩适配微调(Low-Rank
+Adaptation, LoRA)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96quantization"><span class="toc-number">1.5.1.</span> <span class="toc-text">2.4.1 模型量化(Quantization)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E6%96%B9%E6%B3%95"><span class="toc-number">1.5.1.1.</span> <span class="toc-text">量化方法</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E4%BD%8E%E7%A7%A9%E9%80%82%E9%85%8Dqlora"><span class="toc-number">1.5.2.</span> <span class="toc-text">2.4.2 量化低秩适配(QLoRA)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#nf%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.5.2.1.</span> <span class="toc-text">NF数据类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8C%E9%87%8F%E5%8C%96double-quant"><span class="toc-number">1.5.2.2.</span> <span class="toc-text">双量化(Double Quant)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E5%86%85%E5%AD%98%E5%88%86%E9%A1%B5"><span class="toc-number">1.5.2.3.</span> <span class="toc-text">统一内存分页</span></a></li></ol></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-history"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/09/05/Android/Room/" title="Android-ROOM组件"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/Android/Android.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Android-ROOM组件"/></a><div class="content"><a class="title" href="/2025/09/05/Android/Room/" title="Android-ROOM组件">Android-ROOM组件</a><time datetime="2025-09-05T07:40:50.000Z" title="发表于 2025-09-05 15:40:50">2025-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/22/TechnicalNotes/Conda/" title="Conda"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/TechnicalNotes/Conda.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Conda"/></a><div class="content"><a class="title" href="/2025/03/22/TechnicalNotes/Conda/" title="Conda">Conda</a><time datetime="2025-03-22T09:44:22.000Z" title="发表于 2025-03-22 17:44:22">2025-03-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/20/TechnicalNotes/win%E5%BA%94%E7%94%A8%E6%B8%85%E5%8D%95/" title="Win应用清单文件"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/TechnicalNotes/Win.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Win应用清单文件"/></a><div class="content"><a class="title" href="/2025/03/20/TechnicalNotes/win%E5%BA%94%E7%94%A8%E6%B8%85%E5%8D%95/" title="Win应用清单文件">Win应用清单文件</a><time datetime="2025-03-20T02:00:00.000Z" title="发表于 2025-03-20 10:00:00">2025-03-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/18/Python/logging/" title="Python系列之logging"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/Python/Python.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Python系列之logging"/></a><div class="content"><a class="title" href="/2025/03/18/Python/logging/" title="Python系列之logging">Python系列之logging</a><time datetime="2025-03-18T11:53:35.000Z" title="发表于 2025-03-18 19:53:35">2025-03-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/03/Web/assets/" title="博客资源托管方案"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/Web/Web.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="博客资源托管方案"/></a><div class="content"><a class="title" href="/2025/03/03/Web/assets/" title="博客资源托管方案">博客资源托管方案</a><time datetime="2025-03-03T02:00:00.000Z" title="发表于 2025-03-03 10:00:00">2025-03-03</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="footer_deal"><a class="deal_link" href="mailto:keaikeqing@gmail.com" title="email"><i class="anzhiyufont anzhiyu-icon-envelope"></i></a><a class="deal_link" href="/rss.xml" title="RSS"><i class="anzhiyufont anzhiyu-icon-rss"></i></a><img class="footer_mini_logo" title="返回顶部" alt="返回顶部" onclick="anzhiyu.scrollToDest(0, 500)" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" size="50px"/><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/keaikeqing" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a><a class="deal_link" target="_blank" rel="noopener" href="https://space.bilibili.com/474502279" title="Bilibili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div id="footer-bar-tips"><div class="copyright">&copy;2024 - 2025 By <a class="footer-bar-link" href="/" title="可爱可倾" target="_blank">可爱可倾</a></div></div><div id="footer-type-tips"></div><div class="js-pjax"><script>function subtitleType () {
+  fetch('https://v1.hitokoto.cn')
+    .then(response => response.json())
+    .then(data => {
+      if (true) {
+        const from = '出自 ' + data.from
+        const sub = []
+        sub.unshift(data.hitokoto, from)
+        window.typed = new Typed('#footer-type-tips', {
+          strings: sub,
+          startDelay: 300,
+          typeSpeed: 150,
+          loop: true,
+          backSpeed: 50,
+        })
+      } else {
+        document.getElementById('footer-type-tips').innerHTML = data.hitokoto
+      }
+    })
+}
+
+if (true) {
+  if (typeof Typed === 'function') {
+    subtitleType()
+  } else {
+    getScript('https://cdn.cbd.int/typed.js@2.1.0/dist/typed.umd.js').then(subtitleType)
+  }
+} else {
+  subtitleType()
+}
+</script></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://beian.miit.gov.cn/" title="冀ICP备2024090701号">冀ICP备2024090701号</a><a class="footer-bar-link cc" href="/copyright" title="cc协议"><i class="anzhiyufont anzhiyu-icon-copyright-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-by-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-nc-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-nd-line"></i></a></div></div></div></footer></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="sidebar-site-data site-data is-center"><a href="/archives/" title="archive"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/" title="tag"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/" title="category"><div class="headline">分类</div><div class="length-num">9</div></a></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><a class="darkmode_switchbutton menu-child" href="javascript:void(0);" title="显示模式"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span>显示模式</span></a></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">网页</div><div class="back-menu-list"><a class="back-menu-item" href="https://blog.keaikeqing.cn/" title="博客"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/img/favicon.ico" alt="博客"/><span class="back-menu-item-text">博客</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 归档</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/?id=8265222461&amp;server=tencent"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page faa-parent animated-hover" href="/about/"><span> 关于</span></a></div></div><span class="sidebar-menu-item-title">标签</span></div></div><div id="keyboard-tips"><div class="keyboardTitle">博客快捷键</div><div class="keybordList"><div class="keybordItem"><div class="keyGroup"><div class="key">shift K</div></div><div class="keyContent"><div class="content">关闭快捷键功能</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift A</div></div><div class="keyContent"><div class="content">打开/关闭中控台</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift M</div></div><div class="keyContent"><div class="content">播放/暂停音乐</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift D</div></div><div class="keyContent"><div class="content">深色/浅色显示模式</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift S</div></div><div class="keyContent"><div class="content">站内搜索</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift R</div></div><div class="keyContent"><div class="content">随机访问</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift H</div></div><div class="keyContent"><div class="content">返回首页</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift F</div></div><div class="keyContent"><div class="content">友链鱼塘</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift L</div></div><div class="keyContent"><div class="content">友链页面</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift P</div></div><div class="keyContent"><div class="content">关于本站</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift I</div></div><div class="keyContent"><div class="content">原版/本站右键菜单</div></div></div></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="anzhiyufont anzhiyu-icon-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="anzhiyufont anzhiyu-icon-gear"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="anzhiyufont anzhiyu-icon-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="anzhiyufont anzhiyu-icon-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div><div id="nav-music"><a id="nav-music-hoverTips" onclick="anzhiyu.musicToggle()" accesskey="m">播放音乐</a><div id="console-music-bg"></div><meting-js id="8265222461" server="tencent" type="playlist" mutex="true" preload="none" theme="var(--anzhiyu-main)" data-lrctype="0" order="random" volume="0.3"></meting-js></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="anzhiyufont anzhiyu-icon-xmark"></i></button></nav><div class="is-center" id="loading-database"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-pulse-icon"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="anzhiyufont anzhiyu-icon-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="anzhiyufont anzhiyu-icon-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right" style="font-size: 1rem;"></i></div><div class="rightMenu-item" id="menu-top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="anzhiyufont anzhiyu-icon-paste"></i><span>粘贴文本</span></div><a class="rightMenu-item" id="menu-commenttext"><i class="anzhiyufont anzhiyu-icon-comment-medical"></i><span>引用到评论</span></a><div class="rightMenu-item" id="menu-newwindow"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="anzhiyufont anzhiyu-icon-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="anzhiyufont anzhiyu-icon-images"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="anzhiyufont anzhiyu-icon-download"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-newwindowimg"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开图片</span></div><div class="rightMenu-item" id="menu-search"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-searchBaidu"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>百度搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="anzhiyufont anzhiyu-icon-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="anzhiyufont anzhiyu-icon-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="anzhiyufont anzhiyu-icon-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-playlist" onclick="window.open(&quot;https://y.qq.com/n/ryqq/playlist/8265222461&quot;, &quot;_blank&quot;);" style="display: none;"><i class="anzhiyufont anzhiyu-icon-radio"></i><span>查看所有歌曲</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item menu-link" id="menu-randomPost"><i class="anzhiyufont anzhiyu-icon-shuffle"></i><span>随便逛逛</span></a><a class="rightMenu-item menu-link" href="/categories/"><i class="anzhiyufont anzhiyu-icon-cube"></i><span>博客分类</span></a><a class="rightMenu-item menu-link" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags"></i><span>文章标签</span></a></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item" id="menu-copy" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制地址</span></a><a class="rightMenu-item" id="menu-commentBarrage" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-message"></i><span class="menu-commentBarrage-text">关闭热评</span></a><a class="rightMenu-item" id="menu-darkmode" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></a><a class="rightMenu-item" id="menu-translate" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-language"></i><span>轉為繁體</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.cbd.int/instant.page@5.2.0/instantpage.js" type="module"></script><script src="https://cdn.cbd.int/vanilla-lazyload@17.8.5/dist/lazyload.iife.min.js"></script><script src="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.cbd.int/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><canvas id="universe"></canvas><script async src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.0/dark/dark.js"></script><script async src="/anzhiyu/random.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.cbd.int/mathjax@3.2.2/es5/tex-mml-chtml.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.cbd.int/mermaid@10.2.4/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  anzhiyu.addGlobalFn('themeChange', runMermaid, 'mermaid')
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const init = () => {
+    twikoo.init(Object.assign({
+      el: '#twikoo-wrap',
+      envId: 'https://twikoo.keaikeqing.cn',
+      region: 'ap-tianjin',
+      onCommentLoaded: () => {
+        anzhiyu.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      }
+    }, null))
+  }
+
+  const loadTwikoo = () => {
+    if (typeof twikoo === 'object') setTimeout(runFn,0)
+    else getScript('https://cdn.cbd.int/twikoo@1.6.44/dist/twikoo.all.min.js').then(runFn)
+  }
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://twikoo.keaikeqing.cn',
+      region: 'ap-tianjin',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const runFn = () => {
+    init();
+    GLOBAL_CONFIG_SITE.isPost && getCount()
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) anzhiyu.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else {
+      loadTwikoo()
+    }
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script><script>(()=>{
+  const getGiscusTheme = theme => {
+    return theme === 'dark' ? 'dark' : 'preferred_color_scheme'
+  }
+
+  const loadGiscus = () => {
+    const config = Object.assign({
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'keaikeqing/blogdis',
+      'data-repo-id': 'R_kgDONKpBew',
+      'data-category-id': 'DIC_kwDONKpBe84Cj_Px',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true
+    },{"data-lang":"zh-CN","data-mapping":"pathname","data-category":"Announcements","data-input-position":"top"})
+
+    const ele = document.createElement('script')
+    for (let key in config) {
+      ele.setAttribute(key, config[key])
+    }
+    document.getElementById('giscus-wrap').appendChild(ele)
+  }
+
+  const changeGiscusTheme = theme => {
+    const sendMessage = message => {
+      const iframe = document.querySelector('iframe.giscus-frame')
+      if (!iframe) return
+      iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app')
+    }
+
+    sendMessage({
+      setConfig: {
+        theme: getGiscusTheme(theme)
+      }
+    });
+  }
+
+  anzhiyu.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if ('Twikoo' === 'Giscus' || !false) {
+    if (false) anzhiyu.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><input type="hidden" name="page-type" id="page-type" value="post"></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const getComment = () => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://twikoo.keaikeqing.cn',
+        region: 'ap-tianjin',
+        pageSize: 6,
+        includeReply: true
+      }).then(function (res) {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        saveToLocal.set('twikoo-newest-comments', JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray)
+      }).catch(function (err) {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      getScript('https://cdn.cbd.int/twikoo@1.6.44/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'data-lazy-src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'><div class='name'><span>${array[i].nick} </span></div></a>`
+        }
+        
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <time datetime="${array[i].date}">${anzhiyu.diffDate(array[i].date, true)}</time></div>
+        </div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom && ($dom.innerHTML= result)
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('twikoo-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><script async data-pjax src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.1/bubble/bubble.js"></script><script>var visitorMail = "visitor@keaikeqing.cn";
+</script><script async data-pjax src="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/waterfall/waterfall.js"></script><script src="https://cdn.cbd.int/qrcodejs@1.0.0/qrcode.min.js"></script><script src="/js/anzhiyu/right_click_menu.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css"><script defer src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/js/mathjax_config.js"></script><script type="text/javascript" id="MathJax-script" defer src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/js/lib/MathJax/tex-chtml.js"></script><script defer src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/live2d-widget/autoload.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/canvas-nest.min.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/aplayer/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.cbd.int/anzhiyu-blog-static@1.0.1/js/APlayer.min.js"></script><script src="https://cdn.cbd.int/hexo-anzhiyu-music@1.0.1/assets/js/Meting2.min.js"></script><script src="https://cdn.cbd.int/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:type\"]","meta[property=\"og:site_name\"]","meta[property=\"og:description\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"]):not([href="#waifu"]):not([href="#waifu-toggle"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+  // removeEventListener scroll 
+  anzhiyu.removeGlobalFnEvent('pjax')
+  anzhiyu.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script charset="UTF-8" src="https://cdn.cbd.int/anzhiyu-theme-static@1.1.5/accesskey/accesskey.js"></script></div><div id="popup-window"><div class="popup-window-title">通知</div><div class="popup-window-divider"></div><div class="popup-window-content"><div class="popup-tip">你好呀</div><div class="popup-link"><i class="anzhiyufont anzhiyu-icon-arrow-circle-right"></i></div></div></div></body></html>

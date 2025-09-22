@@ -1,0 +1,13 @@
+/* 指定字体 */
+@font-face {
+  font-family: "Maple Mono";
+  font-display: swap;
+  src: url(https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/fonts/MapleMonoNormalNL-CN-Regular.woff2)
+    format("woff2");
+}
+
+/* 应用字体 */
+body {
+  font-family: "Maple Mono";
+  line-height: 1.5;
+}

@@ -1,0 +1,822 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"><title>LLM模型之PowerInfer2.0 | 可爱可倾</title><meta name="author" content="可爱可倾"><meta name="copyright" content="可爱可倾"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#f7f9fe"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-touch-fullscreen" content="yes"><meta name="apple-mobile-web-app-title" content="LLM模型之PowerInfer2.0"><meta name="application-name" content="LLM模型之PowerInfer2.0"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="#f7f9fe"><meta property="og:type" content="article"><meta property="og:title" content="LLM模型之PowerInfer2.0"><meta property="og:url" content="https://blog.keaikeqing.cn/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/index.html"><meta property="og:site_name" content="可爱可倾"><meta property="og:description" content="PowerInfer-2 在智能手机上的快速大语言模型推理 原文链接：PowerInfer-2: Fast Large Language Model Inference on a Smartphone 1 简介 PowerInfer-2是一个为智能手机上大型语言模型(LLM)高速推理而设计的框架，特"><meta property="og:locale" content="zh-CN"><meta property="og:image" content="https://blog.keaikeqing.cn/papercover/NLP/NLP.webp"><meta property="article:author" content="可爱可倾"><meta property="article:tag"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://blog.keaikeqing.cn/papercover/NLP/NLP.webp"><meta name="description" content="PowerInfer-2 在智能手机上的快速大语言模型推理 原文链接：PowerInfer-2: Fast Large Language Model Inference on a Smartphone 1 简介 PowerInfer-2是一个为智能手机上大型语言模型(LLM)高速推理而设计的框架，特"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://blog.keaikeqing.cn/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/"><link rel="preconnect" href="//cdn.cbd.int"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="google-site-verification" content="xxx"/><meta name="baidu-site-verification" content="code-xxx"/><meta name="msvalidate.01" content="xxx"/><link rel="manifest" href="/manifest.json"/><meta name="msapplication-TileColor" content="var(--anzhiyu-main)"/><link rel="mask-icon" href="/img/siteicon/apple-icon-180.png" color="#5bbad5"/><link rel="apple-touch-icon" sizes="180x180" href="/img/siteicon/apple-icon-180.png"/><link rel="apple-touch-icon-precomposed" sizes="180x180" href="/img/siteicon/apple-icon-180.png"/><link rel="icon" type="image/png" sizes="32x32" href="/img/32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/img/16.png"/><link rel="bookmark" href="/img/siteicon/apple-icon-180.png"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1290-2796.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2796-1290.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1179-2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2556-1179.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"/><link rel="apple-touch-startup-image" href="/img/siteicon/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  linkPageTop: undefined,
+  peoplecanvas: undefined,
+  postHeadAiDescription: undefined,
+  diytitle: {"enable":true,"leaveTitle":"w(ﾟДﾟ)w 期待下次再见!","backTitle":"♪(^∇^*) 欢迎肥来！"},
+  LA51: {"enable":true,"ck":"3KAOg7IT5KO5nuXL","LingQueMonitorID":"3KIpEgdIKLBlVguQ"},
+  greetingBox: {"enable":true,"default":"每一天安好","list":[{"greeting":"晚安😴","startTime":0,"endTime":5},{"greeting":"早上好鸭👋, 祝你一天好心情！","startTime":6,"endTime":9},{"greeting":"上午好👋, 状态很好，鼓励一下～","startTime":10,"endTime":10},{"greeting":"11点多啦, 在坚持一下就吃饭啦～","startTime":11,"endTime":11},{"greeting":"午安👋, 宝贝","startTime":12,"endTime":14},{"greeting":"🌈充实的一天辛苦啦！","startTime":14,"endTime":18},{"greeting":"19点喽, 奖励一顿丰盛的大餐吧🍔。","startTime":19,"endTime":19},{"greeting":"晚上好👋, 在属于自己的时间好好放松😌~","startTime":22,"endTime":24}]},
+  twikooEnvId: 'https://twikoo.keaikeqing.cn',
+  commentBarrageConfig:undefined,
+  music_page_default: "nav_music",
+  root: '/',
+  preloader: {"source":3},
+  friends_vue_info: undefined,
+  navMusic: true,
+  mainTone: {"mode":"both","api":"https://img2color-go.vercel.app/api?img=","cover_change":true},
+  authorStatus: {"skills":["🤖️ 数码科技爱好者","📚 热爱学习与探索","🎮 游戏娱乐和创作","🔨 设计开发一条龙","🎨 创意与艺术设计","🌟 追随动漫二次元"]},
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"简","rightMenuMsgToTraditionalChinese":"转为繁体","rightMenuMsgToSimplifiedChinese":"转为简体"},
+  noticeOutdate: {"limitDay":180,"position":"top","messagePrev":"时光悄然流逝，距离上次更新已有","messageNext":"天，内容可能已经过时，请谨慎参考。"},
+  highlight: {"plugin":"prismjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":330},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    simplehomepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"copy":true,"copyrightEbable":true,"limitCount":50,"languages":{"author":"作者: 可爱可倾","link":"链接: ","source":"来源: 可爱可倾","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。","copySuccess":"复制成功，复制和转载请标注本文地址"}},
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#425AEF","bgDark":"#1f1f1f","position":"top-center"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.min.js',
+      css: 'https://cdn.cbd.int/flickr-justified-gallery@2.1.2/dist/fjGallery.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: true,
+  isAnchor: true,
+  shortcutKey: {"enable":true,"delay":100,"shiftDelay":200},
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  configTitle: '可爱可倾',
+  title: 'LLM模型之PowerInfer2.0',
+  postAI: '',
+  pageFillDescription: 'PowerInfer-2, 1 简介, 1.1 性能提升, 2 概述, 2.1 核心, 2.2 神经元簇和架构, 3 在线部分, 3.1 多态神经元引擎, 3.1.1 以 NPU 为中心的预填充, 3.1.2 以CPU为中心的解码, 3.2 内存中神经元缓存, 3.3 灵活的神经元加载, 3.3.1 自适应捆绑, 3.3.2 灵活的神经元加载, 3.4 神经元簇级管道, 3.4.1 矩阵级管道, 3.4.2 神经元簇级管道, 4 离线部分, 4.1 生成执行计划, 附录, LLM in a flash在智能手机上的快速大语言模型推理原文链接简介是一个为智能手机上大型语言模型高速推理而设计的框架特别适用于大小超过设备内存容量的模型性能提升是第一个为模型提供服务的系统智能手机每秒生成个对于完全在内存中拟合的模型在保持与和相当的推理速度的同时可以减少大约的内存使用低推理延迟最大限度地减少预填充阶段和解码阶段的推理延迟低内存占用减少推理过程中的内存使用即使模型大小超过设备内存限制也能实现的低延迟推理灵活性确保设计能够无缝适应具有不同计算内存和存储容量的智能手机概述核心的核心是将推理中典型的粗粒度矩阵计算分解为细粒度神经元集群计算神经元簇和架构以神经元簇的粒度进行计算和操作神经元簇可以在计算过程中动态地由多个激活的神经元组成神经元的数量由计算单元的计算能力决定从而可以充分利用具有不同计算能力的图展示了的整体架构它分为在线右部分和离线左部分程序在线部分提供神经元簇粒度的推理包括四个协作组件多态神经元引擎内存中神经元缓存灵活的神经元加载和神经元簇级别管道离线部分描述在线推理中涉及的每个组件的具体配置并指导在线过程整体架构在线部分多态神经元引擎引入了一个多态神经元引擎该引擎动态地将神经元组合成神经元簇以利用推理阶段和异质的不同计算特征用于预填充和解码阶段的两个计算工作流程如图所示的多态神经元引擎预填充阶段采用以为中心的工作流程利用进行计算利用进行准备解码阶段以为中心仅使用核心来利用稀疏激活以为中心的预填充对于预填充阶段神经元簇包含权重矩阵中的所有神经元所有都会同时处理尽管这些中的每一个都显示出高稀疏性并激活不同的神经元但由于这些激活的聚合总体稀疏性显着降低因此在预填充阶段不会使用预测器来计算激活的神经元而是选择直接将所有神经元合并成一个大的神经元簇核心不参与矩阵计算在预填充阶段只为执行必要的准备任务首先由于内存有限在预填充阶段依赖核心将闪存中存储的权重加载到内存中其次由于当前的不支持直接使用量化权重进行计算在计算之前使用内核对数据进行反量化图演示了和如何协作在层粒度中执行预填充阶段推理计算需要使用与共享的有限内存因此在计算开始之前应将所需的矩阵权重预加载到该共享内存中在进行任何矩阵乘法之前多个中核从神经元缓存中读取量化矩阵权重并提前将这些矩阵权重反量化为最终将结果存储在和之间的共享内存中同时使用另一个大核将下一层的所有矩阵权重异步预加载到神经元缓存中中核的反量化的计算和大核的操作同时进行以减少开销值得注意的是由于预填充阶段涉及密集矩阵而不是稀疏计算通过进行加权加载可以利用顺序读取将大块数据加载到内存中从而最大限度地利用的带宽以为中心的解码与预填充阶段不同解码阶段在每次迭代期间集中于单个表现出显着的稀疏性因为权重矩阵中只有一小部分神经元大约被激活并参与计算因此对于解码阶段调用预测器来识别在开始计算之前将激活哪些神经元然后引擎将这些激活的神经元合并成一个小的神经元簇并利用核心动态计算神经元簇当批量大小为时即就一个内核上矩阵向量计算的延迟低于上的延迟由于稀疏性导致激活的神经元数量减少内核最适合中的这些较轻且稀疏的计算具体来说在解码阶段利用内核来计算注意力块和块尽管注意力块没有表现出稀疏性但当输入只是单个向量时内核仍然提供较低的计算延迟对于块首先将块的输入向量传递给预测器预测器预测权重矩阵中的哪些神经元需要激活并将它们合并到神经元簇中然后每个核心获取一个集群并计算集群内的这些神经元和输入向量图说明了不同核进行的解码阶段推断总结如下核心首先从神经元缓存中读取注意力块的权重并使用输入向量进行计算运行预测器来确定后续权重矩阵中神经元的激活状态核心将激活的神经元分成几个簇每个核心负责用输入向量计算其簇内激活的神经元并最终聚合结果如果这些神经元位于神经元缓存内内核将使用输入向量计算它们在缓存未命中的情况下即神经元不在神经元缓存中核心上运行的线程将神经元异步加载到缓存中最终通知计算线程完成计算内存中神经元缓存引入了针对内各种数据类型量身定制的分段神经元缓存设计它将缓存划分为多个区域每个区域都有特定的预取和逐出策略注意力块权重较小且激活较少在整个运行时预加载并保留相比之下块容易频繁激活热神经元对这些神经元使用基于最近最少使用的动态驱逐策略这种方法确保热神经元更有可能保留在缓存中而冷神经元经常被逐出并按需从闪存加载重要的是逐出过程不涉及写入存储而只是丢弃内存中的权重利用经典的双队列方法来实现其神经元缓存该缓存以单个神经元的粒度管理权重该系统维护两个双向链表队列标记为活动和非活动其中队列中神经元的顺序由它们最近访问的时间决定最近访问的神经元位于队列的头部缓存管理器的工作流程如下在运行时所有神经元最初都会加入非活动队列重新访问时它们被提升到活动队列的前面已经在活动队列中的神经元在后续访问时被移动到头部为了管理缓存容量当活动队列占满缓存空间的时活动队列尾部的神经元将被移至非活动队列直到活动队列的占用率降至以下如果缓存达到容量非活动队列尾部的神经元将被丢弃为新条目腾出空间灵活的神经元加载通过自适应捆绑和加载神经元来最大限度地减少开销这是由模型的量化决定的自适应捆绑在推理过程仍然不可避免地导致未缓存神经元的操作为了优化读取吞吐量并最小化操作还捆绑相关神经元尽管在单个权重矩阵内的共激活在移除热神经元后变得不常见但不同矩阵中相应位置的神经元通常会一起激活因此选择根据神经元粒度而不是矩阵结构来存储神经元权重例如矩阵中第个神经元的共激活概率高达所以将和矩阵中第个神经元的权重连接到单个条目中灵活的神经元加载考虑到不同模型的量化方法和的固有特性进一步引入了不同模型的不同加载策略对于没有量化的模型由于每个神经元占用的存储空间较大使用更大粒度的随机读取来提高带宽例如中的单个神经元占用来自和矩阵的神经元的总大小为通过一次随机读取有效地将整个激活包传输到内存中对于位量化模型捆绑包大小设置为以模型为例每个神经元被量化为位精度并占用量化的值为量化组的尺度为组合束大小达到为了与存储介质的最小读取粒度保持一致在捆绑包中额外补充了将总数四舍五入为然而并没有在单个操作中加载这些包而是选择了粒度因为我们发现两次单独的随机读取的带宽超过了单个读取的带宽从而优化了读取过程此外考虑到这些神经束内共激活的可能性为这些成束神经元仍有近的概率不被共激活因此组合两个随机读取可能会导致带宽浪费为了缓解这个问题对于使用位量化的模型会延迟第二个读取直到获得门神经元乘法的结果使用预测器来确定门矩阵内神经元的激活并根据此信息启动束第一部分的负载之后如果门神经元的输出通过激活函数非零将继续加载捆绑包的第二部分从而最大限度地减少不必要的操作神经元簇级管道为了减少延迟引入了一种新颖的管道机制可以同时处理神经元集群和操作将计算与活动重叠来隐藏开销图是两种类型的管道结合了矩阵向量乘法和五个核心个计算核心和个核心上的操作神经元簇级管道矩阵级管道将管道分成孤立的矩阵单元中的神经元簇级管道打破了矩阵障碍并将其计算和操作混合在神经元簇粒度中矩阵级管道一种简单的方法是矩阵级重叠它发出命令从存储中检索矩阵神经元同时处理内存中已有的神经元当存储中的神经元被加载时它们会立即被处理虽然这种矩阵级重叠方法可以在一定程度上隐藏计算过程中操作的成本但它仍然要求系统等待矩阵内所有神经元的完成包括从存储中获取的神经元然后再继续下一个如图所示假设一个矩阵包含个神经元簇其中个位于内存中其余个位于存储中一部分操作可以隐藏在缓存的神经元计算后面但由于时间较长仍然存在内核必须等待完成的情况神经元簇级管道为了消除操作的等待时间引入了神经元簇级管道机制如图所示通过将神经元簇作为粒度可以在来自多个矩阵的神经元簇计算中重叠操作具体来说打破了矩阵计算之间的障碍一旦一个神经元簇完成计算它立即开始计算内存中下一个矩阵中的神经元簇该机制有效减少了等待气泡将神经元簇的执行过程分为个连续的阶段创建了多个计算线程和一个线程来分别处理这个阶段的计算和操作通过预测器确定和矩阵的行列是否被激活从存储器中读取矩阵的行权值计算矩阵的行与输入向量的乘积从存储中读取和矩阵的行列分别计算和矩阵的行列与输入向量的乘积图展示了计算和线程如何工作来实现神经元簇管道在每个块开始时所有神经元最初都处于阶段被插入到计算队列中计算线程处理这些神经元仅将那些激活的神经元推进到后续阶段然后这些激活的神经元合并成神经元簇如果神经元簇的权重在内存中可用则神经元簇进入阶段并返回到计算队列如果不是则将其设置为并移至队列同时计算线程继续处理队列中的下一个神经元簇同时线程从队列中取出神经元根据需要执行任务和的执行遵循与和类似的模式神经元簇级管道工作流离线部分为了自动适应不同的模型或智能手机在在线推理开始之前对于最初在新智能手机上服务的每个模型执行一次离线过程此过程涉及接收三种类型的输入模型权重用户输入和硬件规格它输出一个执行计划描述在线推理中涉及的每个组件的配置并指导在线过程生成执行计划的离线规划器通过分析模型权重用户输入和硬件规格来生成执行计划输出计算内存和的配置输入配置硬件硬件配置的参数如吞吐量和内存带宽用户用户自定义的参数如约束内存限制译码速度下界等离线分析器收集的关于模型的参数例如模型的大小稀疏度级别和缓存特征等输出配置计算根据和的计算强度确定不同阶段或层中和的使用比例内存为了实现内存使用和推理性能之间的平衡规划器允许用户在运行之前设置所需的推理速度根据设置的速度计算所需的最佳缓存大小规划器触发分析器来测量模型的稀疏性以及冷热神经元的分布附录将模型参数存储在闪存中但将其按需带入解决超过可用容量的的挑战减少数据加载量有选择性地把部分参数常驻在中而这部分常驻的参数就是参数和参数原因是因为它们占比较小借鉴了每次在推理时动态加载预测为激活神经元对应的参数滑动窗口保留处理过去个时的激活神经元所对应的参数在中并在处理当前时只对部分多余的参数进行删除缺少的参数进行加载提高传输数据量读取大块数据未来改进把向上投影的第列和向下投影的第行捆绑存储当激活第个中间神经元时这两部分数据会同时被使用通过在闪存中将这些对应的列和行一起存储可以将数据整合成更大的块进行读取原文链接参考翻译',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2025-08-08 10:00:00',
+  postMainColor: '',
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#18171d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f7f9fe')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><link rel="preconnect" href="https://gcore.jsdelivr.net" crossorigin><link rel="stylesheet" href="/css/fonts.css" media="print" onload="this.media='all'"><meta name="generator" content="Hexo 7.3.0"><link rel="alternate" href="/rss.xml" title="可爱可倾" type="application/atom+xml">
+</head><body data-type="anzhiyu"><div id="web_bg"></div><div id="an_music_bg"></div><div id="loading-box" onclick="document.getElementById(&quot;loading-box&quot;).classList.add(&quot;loaded&quot;)"><div class="loading-bg"><img class="loading-img nolazyload" alt="加载头像" src="/img/favicon.ico"/><div class="loading-image-dot"></div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.getElementById('loading-box').classList.add("loaded");
+  },
+  initLoading: () => {
+    document.getElementById('loading-box').classList.remove("loaded")
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+setTimeout(function(){preloader.endLoading();},10000)
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.10/progress_bar/progress_bar.css"/><script async="async" src="https://cdn.cbd.int/pace-js@1.2.4/pace.min.js" data-pace-options="{ &quot;restartOnRequestAfter&quot;:false,&quot;eventLag&quot;:false}"></script><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><div id="nav-group"><span id="blog_name"><a id="site-name" href="/" accesskey="h"><div class="title">可爱可倾</div><i class="anzhiyufont anzhiyu-icon-house-chimney"></i></a><div id="he-plugin-simple"></div><script>var WIDGET = {
+  "CONFIG": {
+    "modules": "0124",
+    "background": "2",
+    "tmpColor": "FFFFFF",
+    "tmpSize": "16",
+    "cityColor": "FFFFFF",
+    "citySize": "16",
+    "aqiColor": "E8D87B",
+    "aqiSize": "16",
+    "weatherIconSize": "24",
+    "alertIconSize": "18",
+    "padding": "10px 10px 10px 10px",
+    "shadow": "0",
+    "language": "auto",
+    "borderRadius": "20",
+    "fixed": "true",
+    "vertical": "top",
+    "horizontal": "left",
+    "left": "20",
+    "top": "7.1",
+    "key": "df245676fb434a0691ead1c63341cd94"
+  }
+}
+</script><link rel="stylesheet" href="https://widget.qweather.net/simple/static/css/he-simple.css?v=1.4.0"/><script src="https://widget.qweather.net/simple/static/js/he-simple.js?v=1.4.0"></script></span><div class="mask-name-container"><div id="name-container"><a id="page-name" href="javascript:anzhiyu.scrollToDest(0, 500)">PAGE_NAME</a></div></div><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 归档</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/?id=8265222461&amp;server=tencent"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page faa-parent animated-hover" href="/about/"><span> 关于</span></a></div></div></div><div id="nav-right"><div class="nav-button" id="randomPost_button"><a class="site-page" onclick="toRandomPost()" title="随机前往一个文章" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-dice"></i></a></div><div class="nav-button" id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" title="搜索🔍" accesskey="s"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span> 搜索</span></a></div><input id="center-console" type="checkbox"/><label class="widget" for="center-console" title="中控台" onclick="anzhiyu.switchConsole();"><i class="left"></i><i class="widget center"></i><i class="widget right"></i></label><div id="console"><div class="console-card-group-reward"><ul class="reward-all console-card"><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp" target="_blank"><img class="post-qr-code-img" alt="微信" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp" target="_blank"><img class="post-qr-code-img" alt="支付宝" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div><div class="console-card-group"><div class="console-card-group-left"><div class="console-card" id="card-newest-comments"><div class="card-content"><div class="author-content-item-tips">互动</div><span class="author-content-item-title"> 最新评论</span></div><div class="aside-list"><span>正在加载中...</span></div></div></div><div class="console-card-group-right"><div class="console-card tags"><div class="card-content"><div class="author-content-item-tips">兴趣点</div><span class="author-content-item-title">寻找你感兴趣的领域</span></div></div><div class="console-card history"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-box-archiv"></i><span>文章</span></div><div class="card-archives"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="anzhiyufont anzhiyu-icon-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/09/"><span class="card-archive-list-date">九月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/03/"><span class="card-archive-list-date">三月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">4</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2025/02/"><span class="card-archive-list-date">二月 2025</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/11/"><span class="card-archive-list-date">十一月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">2</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/09/"><span class="card-archive-list-date">九月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">7</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/08/"><span class="card-archive-list-date">八月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">18</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/07/"><span class="card-archive-list-date">七月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">1</span><span>篇</span></div></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/06/"><span class="card-archive-list-date">六月 2024</span><div class="card-archive-list-count-group"><span class="card-archive-list-count">10</span><span>篇</span></div></a></li></ul></div><hr/></div></div></div><div class="button-group"><div class="console-btn-item"><a class="darkmode_switchbutton" title="显示模式切换" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-moon"></i></a></div><div class="console-btn-item" id="consoleHideAside" onclick="anzhiyu.hideAsideBtn()" title="边栏显示控制"><a class="asideSwitch"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></a></div><div class="console-btn-item" id="consoleMusic" onclick="anzhiyu.musicToggle()" title="音乐开关"><a class="music-switch"><i class="anzhiyufont anzhiyu-icon-music"></i></a></div><div class="console-btn-item" id="consoleKeyboard" onclick="anzhiyu.keyboardToggle()" title="快捷键开关"><a class="keyboard-switch"><i class="anzhiyufont anzhiyu-icon-keyboard"></i></a></div></div><div class="console-mask" onclick="anzhiyu.hideConsole()" href="javascript:void(0);"></div></div><div class="nav-button" id="nav-totop"><a class="totopbtn" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i><span id="percent" onclick="anzhiyu.scrollToDest(0,500)">0</span></a></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" title="切换"><i class="anzhiyufont anzhiyu-icon-bars"></i></a></div></div></div></nav><div id="post-info"><div id="post-firstinfo"><div class="meta-firstline"><a class="post-meta-original">原创</a><span class="post-meta-categories"><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-inbox post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" itemprop="url">自然语言处理</a></span><span class="article-meta tags"></span></div></div><h1 class="post-title" itemprop="name headline">LLM模型之PowerInfer2.0</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="anzhiyufont anzhiyu-icon-calendar-days post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" itemprop="dateCreated datePublished" datetime="2024-08-08T02:00:00.000Z" title="发表于 2024-08-08 10:00:00">2024-08-08</time><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-history post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" itemprop="dateCreated datePublished" datetime="2025-08-08T02:00:00.000Z" title="更新于 2025-08-08 10:00:00">2025-08-08</time></span></div><div class="meta-secondline"><span class="post-meta-separator"></span><span class="post-meta-wordcount"><i class="anzhiyufont anzhiyu-icon-file-word post-meta-icon" title="文章字数"></i><span class="post-meta-label" title="文章字数">字数总计:</span><span class="word-count" title="文章字数">4.5k</span><span class="post-meta-separator"></span><i class="anzhiyufont anzhiyu-icon-clock post-meta-icon" title="阅读时长"></i><span class="post-meta-label" title="阅读时长">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator"></span><span id="" data-flag-title="LLM模型之PowerInfer2.0"><i class="anzhiyufont anzhiyu-icon-fw-eye post-meta-icon"></i><span class="post-meta-label" title="阅读量">阅读量:</span><span id="twikoo_visitors" title="访问量"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-spin"></i></span></span><span class="post-meta-separator">       </span><span class="post-meta-position" title="作者IP属地为天津"><i class="anzhiyufont anzhiyu-icon-location-dot"></i>天津</span><span class="post-meta-separator"></span><span class="post-meta-commentcount"><i class="anzhiyufont anzhiyu-icon-comments post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/#post-comment" tabindex="-1"><span id="twikoo-count"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-spin"></i></span></a></span></div></div></div><section class="main-hero-waves-area waves-area"><svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto"><defs><path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path></defs><g class="parallax"><use href="#gentle-wave" x="48" y="0"></use><use href="#gentle-wave" x="48" y="3"></use><use href="#gentle-wave" x="48" y="5"></use><use href="#gentle-wave" x="48" y="7"></use></g></svg></section><div id="post-top-cover"><img class="nolazyload" id="post-top-bg" src="/papercover/NLP/NLP.webp"></div></header><main id="blog-container"><div class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container" itemscope itemtype="https://blog.keaikeqing.cn/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/"><header><a class="post-meta-categories" href="/categories/%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E5%A4%84%E7%90%86/" itemprop="url">自然语言处理</a><h1 id="CrawlerTitle" itemprop="name headline">LLM模型之PowerInfer2.0</h1><span itemprop="author" itemscope itemtype="http://schema.org/Person">可爱可倾</span><time itemprop="dateCreated datePublished" datetime="2024-08-08T02:00:00.000Z" title="发表于 2024-08-08 10:00:00">2024-08-08</time><time itemprop="dateCreated datePublished" datetime="2025-08-08T02:00:00.000Z" title="更新于 2025-08-08 10:00:00">2025-08-08</time></header><h1 id="powerinfer-2">PowerInfer-2</h1>
+<p>在智能手机上的快速大语言模型推理 原文链接：<a
+target="_blank" rel="noopener" href="https://arxiv.org/abs/2406.06282">PowerInfer-2: Fast Large
+Language Model Inference on a Smartphone</a></p>
+<h2 id="简介">1 简介</h2>
+<p>PowerInfer-2是一个为智能手机上大型语言模型(LLM)高速推理而设计的框架，<strong>特别适用于大小超过设备内存容量的模型</strong>。</p>
+<h3 id="性能提升">1.1 性能提升</h3>
+<p>PowerInfer-2 是第一个为 TurboSparse-Mixral-47B
+模型提供服务的系统，智能手机每秒生成 11.68
+个tokens。对于完全在内存中拟合的模型，PowerInfer-2 在保持与 llama.cpp 和
+MLC-LLM 相当的推理速度的同时，可以减少大约 40% 的内存使用。</p>
+<ol type="1">
+<li>低推理延迟：最大限度地减少预填充阶段（TTFT）和解码阶段（TBT）的推理延迟；</li>
+<li>低内存占用：减少推理过程中的内存使用，即使模型大小超过设备内存限制，也能实现LLM的低延迟推理；</li>
+<li>灵活性：确保设计能够无缝适应具有不同计算、内存和存储容量的智能手机。</li>
+</ol>
+<h2 id="概述">2 概述</h2>
+<h3 id="核心">2.1 核心</h3>
+<p><strong>PowerInfer-2 的核心是将 LLM
+推理中典型的粗粒度矩阵计算分解为细粒度神经元集群计算。</strong></p>
+<h3 id="神经元簇和架构">2.2 神经元簇和架构</h3>
+<p>PowerInfer-2以神经元簇的粒度进行计算和I/O操作，<strong>神经元簇可以在计算过程中动态地由多个激活的神经元组成</strong>，神经元的数量由计算单元的计算能力决定，从而可以充分利用具有不同计算能力的XPU。</p>
+<p>图 1
+展示了PowerInfer-2的整体架构，它分为在线（右部分）和离线（左部分）程序。</p>
+<ul>
+<li>在线部分提供神经元簇粒度的推理，包括四个协作组件：多态神经元引擎、内存中神经元缓存、灵活的神经元加载和神经元簇级别
+I /O 管道。</li>
+<li>离线部分描述在线推理中涉及的每个组件的具体配置并指导在线过程。</li>
+</ul>
+
+      <div style="text-align: center;">
+        <img src="./images/architecture.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/architecture.webp" style="display: block; margin: 0 auto; width: 80%; height: 80%; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图1: PowerInfer-2整体架构</span>
+      </div>
+    
+<h2 id="在线部分">3 在线部分</h2>
+<h3 id="多态神经元引擎">3.1 多态神经元引擎</h3>
+<p>PowerInfer-2引入了一个多态神经元引擎，该引擎动态地将神经元组合成神经元簇，以利用LLM推理阶段和异质XPU的不同计算特征。用于预填充和解码阶段的两个计算工作流程如图
+2 所示。</p>
+
+      <div style="text-align: center;">
+        <img src="./images/computing-workflow.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/computing-workflow.webp" style="display: block; margin: 0 auto; width: 50%; height: 50%; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图2: PowerInfer-2的多态神经元引擎</span>
+      </div>
+    
+<ul>
+<li><ol type="a">
+<li>预填充阶段采用以 NPU 为中心的工作流程，利用 NPU 进行计算，利用 CPU
+进行准备；</li>
+</ol></li>
+<li><ol start="2" type="a">
+<li>解码阶段以 CPU 为中心，仅使用 CPU 核心来利用稀疏激活。</li>
+</ol></li>
+</ul>
+<h4 id="以-npu-为中心的预填充">3.1.1 以 NPU 为中心的预填充</h4>
+<p>对于<strong>预填充阶段，神经元簇包含权重矩阵中的所有神经元</strong>，所有
+tokens
+都会同时处理。尽管这些tokens中的每一个都显示出高稀疏性并激活不同的神经元，但由于这些激活的聚合，总体稀疏性显着降低。因此，PowerInfer-2在预填充阶段不会使用预测器来计算激活的神经元，而是选择直接将所有神经元合并成一个大的神经元簇。</p>
+<p>CPU核心不参与矩阵计算，在预填充阶段只为NPU执行必要的准备任务。</p>
+<ul>
+<li>首先，由于内存有限，PowerInfer-2 在预填充阶段依赖 CPU
+核心将闪存中存储的权重加载到内存中。</li>
+<li>其次，由于当前的 NPU 不支持直接使用量化权重进行计算，PowerInfer-2 在
+NPU 计算之前使用 CPU 内核对数据进行反量化。</li>
+</ul>
+<p>图 2-a 演示了 CPU 和 NPU 如何协作在 Transformer
+层粒度中执行预填充阶段推理。 NPU 计算需要使用与 CPU
+共享的有限内存。因此，在 NPU 计算开始之前，CPU
+应将所需的矩阵权重预加载到该共享内存中。</p>
+<ol type="1">
+<li>在NPU进行任何矩阵乘法之前，多个CPU中核从神经元缓存中读取量化矩阵权重，并提前将这些矩阵权重反量化为fp16，最终将结果存储在CPU和CPU之间的共享内存中。</li>
+<li>同时，PowerInfer-2
+使用另一个大核将下一层的所有矩阵权重异步预加载到神经元缓存中。</li>
+<li>中核的反量化、NPU的计算和大核的I/O操作同时进行，以减少I/O开销。</li>
+</ol>
+<p>值得注意的是，由于预填充阶段涉及密集矩阵而不是稀疏计算,通过 I/O
+进行加权加载可以利用顺序读取将大块数据加载到内存中，从而最大限度地利用
+UFS 的 I/O 带宽。</p>
+<h4 id="以cpu为中心的解码">3.1.2 以CPU为中心的解码</h4>
+<p>与预填充阶段不同，解码阶段在每次迭代期间集中于单个
+token，表现出显着的稀疏性，因为权重矩阵中只有一小部分神经元（大约
+10%）被激活并参与计算。因此，对于解码阶段，<strong>调用预测器来识别在开始计算之前将激活哪些神经元，然后引擎将这些激活的神经元合并成一个小的神经元簇，并利用
+CPU 核心动态计算神经元簇</strong>:</p>
+<ul>
+<li>当批量大小为 1 时(即就一个 token)，CPU 内核上矩阵向量计算的延迟低于
+NPU 上的延迟。</li>
+<li>由于稀疏性导致激活的神经元数量减少，CPU 内核最适合 XPU
+中的这些较轻且稀疏的计算。</li>
+</ul>
+<p>具体来说，PowerInfer-2 在解码阶段利用 CPU 内核来计算注意力块和 FFN
+块。</p>
+<ul>
+<li>尽管注意力块没有表现出稀疏性，但当输入只是单个向量时，CPU
+内核仍然提供较低的计算延迟。</li>
+<li>对于 FFN 块，PowerInfer-2 首先将 FFN
+块的输入向量传递给预测器，<strong>预测器预测 FFN
+权重矩阵中的哪些神经元需要激活，并将它们合并到神经元簇中</strong>。然后，每个
+CPU 核心获取一个集群并计算集群内的这些神经元和输入向量。</li>
+</ul>
+<p>图 2-b 说明了不同CPU核进行的解码阶段推断，总结如下：</p>
+<ol type="1">
+<li>CPU
+核心首先从神经元缓存中读取注意力块的权重，并使用输入向量进行计算。</li>
+<li>运行预测器来确定后续权重矩阵中神经元的激活状态。</li>
+<li>CPU核心将激活的神经元分成几个簇，每个核心负责用输入向量计算其簇内激活的神经元，并最终聚合结果。</li>
+<li>如果这些神经元位于神经元缓存内，CPU
+内核将使用输入向量计算它们。在缓存未命中的情况下，即神经元不在神经元缓存中，CPU
+核心上运行的 I/O
+线程将神经元异步加载到缓存中，最终通知计算线程完成计算。</li>
+</ol>
+<h3 id="内存中神经元缓存">3.2 内存中神经元缓存</h3>
+<p>PowerInfer-2 引入了针对 LLM
+内各种数据类型量身定制的分段神经元缓存设计。它将缓存划分为多个区域，每个区域都有特定的预取和逐出策略。</p>
+<p>注意力块权重较小且激活较少，在整个运行时预加载并保留。</p>
+<p>相比之下，FFN
+块容易频繁激活热神经元，对这些神经元使用基于最近最少使用 (LRU)
+的动态驱逐策略。这种方法确保热神经元更有可能保留在缓存中，而冷神经元经常被逐出并按需从闪存加载。重要的是，逐出过程不涉及写入存储，而只是丢弃内存中的权重。</p>
+<p>PowerInfer-2 利用经典的双队列方法来实现其 LRU
+神经元缓存，该缓存以单个神经元的粒度管理 LLM
+权重。该系统维护两个双向链表队列，标记为活动和非活动，其中队列中神经元的顺序由它们最近访问的时间决定，最近访问的神经元位于队列的头部。</p>
+<p>**LRU 缓存管理器的工作流程如下：
+在运行时，所有神经元最初都会加入非活动队列。重新访问时，它们被提升到活动队列的前面。已经在活动队列中的神经元在后续访问时被移动到头部。为了管理缓存容量，当活动队列占满缓存空间的
+90% 时，活动队列尾部的神经元将被移至非活动队列，直到活动队列的占用率降至
+90%
+以下。如果缓存达到容量，非活动队列尾部的神经元将被丢弃，为新条目腾出空间。*</p>
+<h3 id="灵活的神经元加载">3.3 灵活的神经元加载</h3>
+<p>PowerInfer-2 通过自适应捆绑和加载神经元来最大限度地减少 I/O
+开销，这是由模型的量化决定的。</p>
+<h4 id="自适应捆绑">3.3.1 自适应捆绑</h4>
+<p>在推理过程仍然不可避免地导致未缓存神经元的 I/O 操作，为了优化 I/O
+读取吞吐量并最小化 I/O 操作，PowerInfer-2
+还捆绑相关神经元。尽管在单个FFN权重矩阵内的共激活在移除热神经元后变得不常见，但不同矩阵中相应位置的神经元通常会一起激活。因此PowerInfer-2
+<strong>选择根据神经元粒度而不是矩阵结构来存储神经元权重</strong>。</p>
+<p>**例如，Gate、Up、Down 矩阵中第 i 个神经元的共激活概率高达
+80%，所以将 Gate、Up 和 Down 矩阵中第 i
+个神经元的权重连接到单个条目中。*</p>
+<h4 id="灵活的神经元加载-1">3.3.2 灵活的神经元加载</h4>
+<p>考虑到不同模型的量化方法和 UFS I/O 的固有特性，PowerInfer-2
+进一步引入了不同模型的不同 I/O 加载策略。</p>
+<p>对于没有量化的模型，由于每个神经元占用的存储空间较大，PowerInfer-2使用更大粒度的随机读取来提高I/O带宽。
+**例如，Llama-7B-FP16 中的单个神经元占用 8KB，来自 Gate、Up 和 Down
+矩阵的神经元的总大小为 24KB。 PowerInfer-2 通过一次随机 I/O
+读取，有效地将整个 24KB 激活包传输到内存中。*</p>
+<p>对于 4 位量化模型，捆绑包大小设置为 8KB。以 Llama-7B
+模型为例，每个神经元被量化为 4 位精度并占用 2.5KB（量化的 int4 值为
+2KB，量化组的 FP16 尺度为 0.5KB），组合束大小达到 7.5KB。为了与存储介质
+4KB 的最小读取粒度保持一致，PowerInfer-2 在捆绑包中额外补充了
+0.5KB，将总数四舍五入为 8KB。然而，PowerInfer-2 并没有在单个 I/O
+操作中加载这些 8KB 包，而是选择了 4KB 粒度。因为我们发现两次单独的 4KB
+随机读取的带宽超过了单个 8KB 读取的带宽，从而优化了 I/O 读取过程。</p>
+<p>此外，考虑到这些神经束内共激活的可能性为 80%，这些成束神经元仍有近
+20% 的概率不被共激活。因此，组合两个 4KB
+随机读取可能会导致带宽浪费。为了缓解这个问题，对于使用 4
+位量化的模型，PowerInfer-2 会延迟第二个 4KB
+读取，直到获得门神经元乘法的结果。(PowerInfer-2
+使用预测器来确定门矩阵内神经元的激活，并根据此信息启动束第一部分的负载。之后，如果门神经元的输出（通过激活函数）非零，PowerInfer-2
+将继续加载捆绑包的第二部分，从而最大限度地减少不必要的 I/O 操作。)</p>
+<h3 id="神经元簇级管道">3.4 神经元簇级管道</h3>
+<p>为了减少 I/O 延迟，PowerInfer-2
+引入了一种新颖的管道机制，可以同时处理神经元集群和 I/O 操作(将计算与 I/O
+活动重叠来隐藏 I/O 开销)。图 3
+是两种类型的管道，结合了矩阵向量乘法和五个核心（4 个计算核心和 1 个 I/O
+核心）上的 I/O 操作。</p>
+
+      <div style="text-align: center;">
+        <img src="./images/neurou-pipeline.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/neurou-pipeline.webp" style="display: block; margin: 0 auto; width: 60%; height: 60%; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图3: 神经元簇级管道</span>
+      </div>
+    
+<ul>
+<li><ol type="a">
+<li>矩阵级管道将管道分成孤立的矩阵单元；</li>
+</ol></li>
+<li><ol start="2" type="a">
+<li>PowerInfer-2 中的神经元簇级管道打破了矩阵障碍，并将其计算和 I/O
+操作混合在神经元簇粒度中。</li>
+</ol></li>
+</ul>
+<h4 id="矩阵级管道">3.4.1 矩阵级管道</h4>
+<p>一种简单的方法是矩阵级重叠，它发出 I/O
+命令从存储中检索矩阵神经元，同时处理内存中已有的神经元。当存储中的神经元被加载时，它们会立即被处理。虽然这种矩阵级重叠方法可以在一定程度上隐藏计算过程中I/O操作的成本，但它仍然要求系统等待矩阵内所有神经元的完成，包括从存储中获取的神经元，然后再继续下一个。</p>
+<p>如图 3-a
+所示，假设一个矩阵包含8个神经元簇，其中4个位于内存中，其余4个位于存储中。一部分
+I/O 操作可以隐藏在缓存的神经元计算后面。但由于 I/O 时间较长，仍然存在
+CPU 内核必须等待 I/O 完成的情况。</p>
+<h4 id="神经元簇级管道-1">3.4.2 神经元簇级管道</h4>
+<p>为了消除 I/O 操作的等待时间，PowerInfer-2
+引入了神经元簇级管道机制，如图3-b所示。通过将神经元簇作为粒度，可以在来自多个矩阵的神经元簇计算中重叠
+I/O 操作。</p>
+<p>具体来说，PowerInfer-2打破了矩阵计算之间的障碍；一旦一个神经元簇完成计算，它立即开始计算内存中下一个矩阵中的神经元簇。该机制有效减少了等待气泡。</p>
+<p>PowerInfer-2将神经元簇的执行过程分为5个连续的阶段，创建了多个计算线程和一个I/O线程来分别处理这5个阶段的计算和I/O操作：</p>
+<ol type="1">
+<li>通过预测器(Pred)确定Gate、Up和Down矩阵的行/列是否被激活;</li>
+<li>从存储器(GIO)中读取Gate矩阵的行权值;</li>
+<li>计算Gate矩阵的行与输入向量(GC)的乘积;</li>
+<li>从存储(UDIO)中读取Up和Down矩阵的行/列;</li>
+<li>分别计算Up和Down矩阵的行/列与输入向量的乘积(UDC)。</li>
+</ol>
+<p>图 4 展示了计算和 I/O 线程如何工作来实现神经元簇管道。</p>
+<ol type="1">
+<li>在每个FFN块开始时，所有神经元最初都处于Pred阶段，被插入到计算队列中。</li>
+<li>计算线程处理这些神经元，仅将那些激活的神经元推进到后续阶段。</li>
+<li>然后这些激活的神经元合并成神经元簇。</li>
+<li>如果神经元簇的 Gate
+权重在内存中可用，则神经元簇进入GC阶段并返回到计算队列。如果不是，则将其设置为
+GIO 并移至 I/O 队列。</li>
+<li>同时，计算线程继续处理队列中的下一个神经元簇。</li>
+<li>同时，I/O 线程从 I/O 队列中取出神经元，根据需要执行 I/O 任务。</li>
+<li>UDIO 和UDC 的执行遵循与GC 和GIO 类似的模式。</li>
+</ol>
+
+      <div style="text-align: center;">
+        <img src="./images/neurou-pipeline-workflow.webp" onerror="this.onerror=null,this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" data-lazy-src="./images/neurou-pipeline-workflow.webp" style="display: block; margin: 0 auto; width: 70%; height: 70%; max-width: 500px; max-height: 500px;">
+        <span style="margin-top: 10px; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #d9d9d9; font-size: 20px; display: block;">图4: 神经元簇级管道工作流</span>
+      </div>
+    
+<h2 id="离线部分">4 离线部分</h2>
+<p>为了自动适应不同的模型或智能手机，在在线推理开始之前，对于最初在新智能手机上服务的每个模型执行一次离线过程。此过程涉及接收三种类型的输入：模型权重、用户输入和硬件规格。它输出一个执行计划，描述在线推理中涉及的每个组件的配置并指导在线过程。</p>
+<h3 id="生成执行计划">4.1 生成执行计划</h3>
+<p>PowerInfer-2
+的离线规划器通过分析模型权重、用户输入和硬件规格来生成执行计划，输出计算、内存和
+I/O 的配置。</p>
+<ol type="1">
+<li>输入配置：
+<ul>
+<li>硬件：硬件配置的参数，如CPU FLOPS、I/O吞吐量和内存带宽。</li>
+<li>用户：用户自定义的参数，如CPU约束、内存限制、译码速度下界等。</li>
+<li>Model：离线分析器收集的关于模型的参数，例如模型的大小、稀疏度级别和缓存特征等。</li>
+</ul></li>
+<li>输出配置：
+<ul>
+<li>计算：根据CPU和NPU的计算强度确定不同阶段或层中CPU和NPU的使用比例。</li>
+<li>内存：为了实现内存使用和推理性能之间的平衡，规划器允许用户在运行
+PowerInfer-2 之前设置所需的推理速度。根据设置的速度，PowerInfer-2
+计算所需的最佳缓存大小。</li>
+<li>I/O：规划器触发分析器来测量模型的稀疏性以及冷热神经元的分布。</li>
+</ul></li>
+</ol>
+<h2 id="附录">附录</h2>
+<h3 id="llm-in-a-flash">LLM in a flash</h3>
+<p>将模型参数存储在闪存中，但将其按需带入DRAM，解决超过DRAM可用容量的llm的挑战。</p>
+<ol type="1">
+<li>减少数据加载量
+<ol type="1">
+<li>有选择性地把部分参数常驻在DRAM中。而这部分常驻的参数就是Attention参数和Embedding参数，原因是因为它们占比较小。</li>
+<li>借鉴了DejaVu。每次在推理时动态加载MLP预测为激活神经元对应的参数。</li>
+<li>滑动窗口。保留处理过去k个token时的激活神经元所对应的参数在DRAM中，并在处理当前token时只对：1）部分多余的参数进行删除；2）缺少的参数进行加载。</li>
+</ol></li>
+<li>提高传输数据量(读取大块数据) 未来改进:
+把向上投影的第i列和向下投影的第i行捆绑存储。当激活第i个中间神经元时，这两部分数据会同时被使用。通过在闪存中将这些对应的列和行一起存储，可以将数据整合成更大的块进行读取。</li>
+</ol>
+<p>原文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2312.11514">LLM in a flash:
+Efficient Large Language Model Inference with Limited Memory</a> <a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/673775476">参考</a> <a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/673572594">翻译</a></p>
+</article><div class="post-copyright"><div class="copyright-cc-box"><i class="anzhiyufont anzhiyu-icon-copyright"></i></div><div class="post-copyright__author_box"><a class="post-copyright__author_img" href="/" title="头像"><img class="post-copyright__author_img_back" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" title="头像" alt="头像"><img class="post-copyright__author_img_front" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" title="头像" alt="头像"></a><div class="post-copyright__author_name">可爱可倾</div><div class="post-copyright__author_desc">花开有期，云舒有意</div></div><div class="post-copyright__post__info"><a class="post-copyright__original" title="该文章为原创文章，注意版权协议" href="https://blog.keaikeqing.cn/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/">原创</a><a class="post-copyright-title"><span onclick="rm.copyPageUrl('https://blog.keaikeqing.cn/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/')">LLM模型之PowerInfer2.0</span></a></div><div class="post-tools" id="post-tools"><div class="post-tools-left"><div class="rewardLeftButton"><div class="post-reward" onclick="anzhiyu.addRewardMask()"><div class="reward-button button--animated" title="赞赏作者"><i class="anzhiyufont anzhiyu-icon-hand-heart-fill"></i>打赏作者</div><div class="reward-main"><div class="reward-all"><span class="reward-title">感谢你赐予我前进的力量</span><ul class="reward-group"><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-weichat.webp" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp" target="_blank"><img class="post-qr-code-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/qrcode-alipay.webp" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul><a class="reward-main-btn" href="/about/#about-reward" target="_blank"><div class="reward-text">赞赏者名单</div><div class="reward-dec">因为你们的支持让我意识到写文章的价值🙏</div></a></div></div></div><div id="quit-box" onclick="anzhiyu.removeRewardMask()" style="display: none"></div></div><div class="shareRight"><div class="share-link mobile"><div class="share-qrcode"><div class="share-button" title="使用手机访问这篇文章"><i class="anzhiyufont anzhiyu-icon-qrcode"></i></div><div class="share-main"><div class="share-main-all"><div id="qrcode" title="https://blog.keaikeqing.cn/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/"></div><div class="reward-dec">使用手机访问这篇文章</div></div></div></div></div><div class="share-link weibo"><a class="share-button" target="_blank" href="https://service.weibo.com/share/share.php?title=LLM模型之PowerInfer2.0&amp;url=https://blog.keaikeqing.cn/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer2/&amp;pic=/papercover/NLP/NLP.webp" rel="external nofollow noreferrer noopener"><i class="anzhiyufont anzhiyu-icon-weibo"></i></a></div><script>function copyCurrentPageUrl() {
+  var currentPageUrl = window.location.href;
+  var input = document.createElement("input");
+  input.setAttribute("value", currentPageUrl);
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  document.body.removeChild(input);
+}</script><div class="share-link copyurl"><div class="share-button" id="post-share-url" title="复制链接" onclick="copyCurrentPageUrl()"><i class="anzhiyufont anzhiyu-icon-link"></i></div></div></div></div></div><div class="post-copyright__notice"><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://blog.keaikeqing.cn" target="_blank">可爱可倾</a>！</span></div></div><div class="post-tools-right"><div class="tag_share"><div class="post-meta__box"><div class="post-meta__box__tag-list"></div></div></div><div class="post_share"><div class="social-share" data-image="/papercover/Android/Android.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"/><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer="defer"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/08/08/NLP/LLMModels/PowerInfer/TurboSparse/"><img class="prev-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/NLP/NLP.webp" onerror="onerror=null;src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">LLM模型之Turbo Sparse</div></div></a></div><div class="next-post pull-right"><a href="/2024/08/08/NLP/LLMModels/PowerInfer/PowerInfer1/"><img class="next-cover" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/NLP/NLP.webp" onerror="onerror=null;src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">LLM模型之PowerInfer1.0</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="anzhiyufont anzhiyu-icon-comments"></i><span> 评论</span></div><div class="comment-randomInfo"><a onclick="anzhiyu.addRandomCommentInfo()" href="javascript:void(0)">匿名评论</a><a href="/privacy" style="margin-left: 4px">隐私政策</a></div><div class="comment-switch"><span class="first-comment">Twikoo</span><span id="switch-btn"></span><span class="second-comment">Giscus</span></div><div class="comment-tips" id="comment-tips"><span>✅ 你无需删除空行，直接评论以获取最佳展示效果</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div><div><div id="giscus-wrap"></div></div></div></div><div class="comment-barrage"></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-content"><div class="author-info__sayhi" id="author-info__sayhi" onclick="anzhiyu.changeSayHelloText()"></div><div class="author-info-avatar"><img class="avatar-img" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="avatar"/><div class="author-status"><img class="g-status" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/author_status.webp" alt="status"/></div></div><div class="author-info__description"><div style="line-height:1.38; margin:0.6rem 0; text-align:center; color:rgba(255, 255, 255, 0.8);">让每一瞬间都散发可爱的光</div></div><div class="author-info__bottom-group"><a class="author-info__bottom-group-left" href="/"><h1 class="author-info__name">可爱可倾</h1><div class="author-info__desc">花开有期，云舒有意</div></a><div class="card-info-social-icons is-center"><a class="social-icon faa-parent animated-hover" href="https://github.com/keaikeqing" target="_blank" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a><a class="social-icon faa-parent animated-hover" href="https://space.bilibili.com/474502279" target="_blank" title="BiliBili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a></div></div></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bullhorn anzhiyu-shake"></i><span>公告</span></div><div class="announcement_content">愿你的世界如花般美好，似云般自由~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-bars"></i><span>文章目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#powerinfer-2"><span class="toc-number">1.</span> <span class="toc-text">PowerInfer-2</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-number">1.1.</span> <span class="toc-text">1 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E6%8F%90%E5%8D%87"><span class="toc-number">1.1.1.</span> <span class="toc-text">1.1 性能提升</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.2.</span> <span class="toc-text">2 概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1 核心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E7%B0%87%E5%92%8C%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.2 神经元簇和架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E7%BA%BF%E9%83%A8%E5%88%86"><span class="toc-number">1.3.</span> <span class="toc-text">3 在线部分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E6%80%81%E7%A5%9E%E7%BB%8F%E5%85%83%E5%BC%95%E6%93%8E"><span class="toc-number">1.3.1.</span> <span class="toc-text">3.1 多态神经元引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A5-npu-%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E9%A2%84%E5%A1%AB%E5%85%85"><span class="toc-number">1.3.1.1.</span> <span class="toc-text">3.1.1 以 NPU 为中心的预填充</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A5cpu%E4%B8%BA%E4%B8%AD%E5%BF%83%E7%9A%84%E8%A7%A3%E7%A0%81"><span class="toc-number">1.3.1.2.</span> <span class="toc-text">3.1.2 以CPU为中心的解码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E4%B8%AD%E7%A5%9E%E7%BB%8F%E5%85%83%E7%BC%93%E5%AD%98"><span class="toc-number">1.3.2.</span> <span class="toc-text">3.2 内存中神经元缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%81%B5%E6%B4%BB%E7%9A%84%E7%A5%9E%E7%BB%8F%E5%85%83%E5%8A%A0%E8%BD%BD"><span class="toc-number">1.3.3.</span> <span class="toc-text">3.3 灵活的神经元加载</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E9%80%82%E5%BA%94%E6%8D%86%E7%BB%91"><span class="toc-number">1.3.3.1.</span> <span class="toc-text">3.3.1 自适应捆绑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%81%B5%E6%B4%BB%E7%9A%84%E7%A5%9E%E7%BB%8F%E5%85%83%E5%8A%A0%E8%BD%BD-1"><span class="toc-number">1.3.3.2.</span> <span class="toc-text">3.3.2 灵活的神经元加载</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E7%B0%87%E7%BA%A7%E7%AE%A1%E9%81%93"><span class="toc-number">1.3.4.</span> <span class="toc-text">3.4 神经元簇级管道</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9F%A9%E9%98%B5%E7%BA%A7%E7%AE%A1%E9%81%93"><span class="toc-number">1.3.4.1.</span> <span class="toc-text">3.4.1 矩阵级管道</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A5%9E%E7%BB%8F%E5%85%83%E7%B0%87%E7%BA%A7%E7%AE%A1%E9%81%93-1"><span class="toc-number">1.3.4.2.</span> <span class="toc-text">3.4.2 神经元簇级管道</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A6%BB%E7%BA%BF%E9%83%A8%E5%88%86"><span class="toc-number">1.4.</span> <span class="toc-text">4 离线部分</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E6%88%90%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 生成执行计划</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95"><span class="toc-number">1.5.</span> <span class="toc-text">附录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#llm-in-a-flash"><span class="toc-number">1.5.1.</span> <span class="toc-text">LLM in a flash</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="anzhiyufont anzhiyu-icon-history"></i><span>最近发布</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/09/05/Android/Room/" title="Android-ROOM组件"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/Android/Android.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Android-ROOM组件"/></a><div class="content"><a class="title" href="/2025/09/05/Android/Room/" title="Android-ROOM组件">Android-ROOM组件</a><time datetime="2025-09-05T07:40:50.000Z" title="发表于 2025-09-05 15:40:50">2025-09-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/22/TechnicalNotes/Conda/" title="Conda"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/TechnicalNotes/Conda.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Conda"/></a><div class="content"><a class="title" href="/2025/03/22/TechnicalNotes/Conda/" title="Conda">Conda</a><time datetime="2025-03-22T09:44:22.000Z" title="发表于 2025-03-22 17:44:22">2025-03-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/20/TechnicalNotes/win%E5%BA%94%E7%94%A8%E6%B8%85%E5%8D%95/" title="Win应用清单文件"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/TechnicalNotes/Win.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Win应用清单文件"/></a><div class="content"><a class="title" href="/2025/03/20/TechnicalNotes/win%E5%BA%94%E7%94%A8%E6%B8%85%E5%8D%95/" title="Win应用清单文件">Win应用清单文件</a><time datetime="2025-03-20T02:00:00.000Z" title="发表于 2025-03-20 10:00:00">2025-03-20</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/18/Python/logging/" title="Python系列之logging"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/Python/Python.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="Python系列之logging"/></a><div class="content"><a class="title" href="/2025/03/18/Python/logging/" title="Python系列之logging">Python系列之logging</a><time datetime="2025-03-18T11:53:35.000Z" title="发表于 2025-03-18 19:53:35">2025-03-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/03/03/Web/assets/" title="博客资源托管方案"><img src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/papercover/Web/Web.webp" onerror="this.onerror=null;this.src='https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp'" alt="博客资源托管方案"/></a><div class="content"><a class="title" href="/2025/03/03/Web/assets/" title="博客资源托管方案">博客资源托管方案</a><time datetime="2025-03-03T02:00:00.000Z" title="发表于 2025-03-03 10:00:00">2025-03-03</time></div></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div id="footer_deal"><a class="deal_link" href="mailto:keaikeqing@gmail.com" title="email"><i class="anzhiyufont anzhiyu-icon-envelope"></i></a><a class="deal_link" href="/rss.xml" title="RSS"><i class="anzhiyufont anzhiyu-icon-rss"></i></a><img class="footer_mini_logo" title="返回顶部" alt="返回顶部" onclick="anzhiyu.scrollToDest(0, 500)" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/avatar.ico" size="50px"/><a class="deal_link" target="_blank" rel="noopener" href="https://github.com/keaikeqing" title="Github"><i class="anzhiyufont anzhiyu-icon-github"></i></a><a class="deal_link" target="_blank" rel="noopener" href="https://space.bilibili.com/474502279" title="Bilibili"><i class="anzhiyufont anzhiyu-icon-bilibili"></i></a></div></div><div id="footer-bar"><div class="footer-bar-links"><div class="footer-bar-left"><div id="footer-bar-tips"><div class="copyright">&copy;2024 - 2025 By <a class="footer-bar-link" href="/" title="可爱可倾" target="_blank">可爱可倾</a></div></div><div id="footer-type-tips"></div><div class="js-pjax"><script>function subtitleType () {
+  fetch('https://v1.hitokoto.cn')
+    .then(response => response.json())
+    .then(data => {
+      if (true) {
+        const from = '出自 ' + data.from
+        const sub = []
+        sub.unshift(data.hitokoto, from)
+        window.typed = new Typed('#footer-type-tips', {
+          strings: sub,
+          startDelay: 300,
+          typeSpeed: 150,
+          loop: true,
+          backSpeed: 50,
+        })
+      } else {
+        document.getElementById('footer-type-tips').innerHTML = data.hitokoto
+      }
+    })
+}
+
+if (true) {
+  if (typeof Typed === 'function') {
+    subtitleType()
+  } else {
+    getScript('https://cdn.cbd.int/typed.js@2.1.0/dist/typed.umd.js').then(subtitleType)
+  }
+} else {
+  subtitleType()
+}
+</script></div></div><div class="footer-bar-right"><a class="footer-bar-link" target="_blank" rel="noopener" href="https://beian.miit.gov.cn/" title="冀ICP备2024090701号">冀ICP备2024090701号</a><a class="footer-bar-link cc" href="/copyright" title="cc协议"><i class="anzhiyufont anzhiyu-icon-copyright-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-by-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-nc-line"></i><i class="anzhiyufont anzhiyu-icon-creative-commons-nd-line"></i></a></div></div></div></footer></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="sidebar-site-data site-data is-center"><a href="/archives/" title="archive"><div class="headline">文章</div><div class="length-num">57</div></a><a href="/tags/" title="tag"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/" title="category"><div class="headline">分类</div><div class="length-num">9</div></a></div><span class="sidebar-menu-item-title">功能</span><div class="sidebar-menu-item"><a class="darkmode_switchbutton menu-child" href="javascript:void(0);" title="显示模式"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span>显示模式</span></a></div><div class="back-menu-list-groups"><div class="back-menu-list-group"><div class="back-menu-list-title">网页</div><div class="back-menu-list"><a class="back-menu-item" href="https://blog.keaikeqing.cn/" title="博客"><img class="back-menu-item-icon" src= "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null,this.src=&quot;https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/config_anzhiyu/404.webp&quot;" data-lazy-src="/img/favicon.ico" alt="博客"/><span class="back-menu-item-text">博客</span></a></div></div></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 文章</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/archives/"><i class="anzhiyufont anzhiyu-icon-box-archive faa-tada" style="font-size: 0.9em;"></i><span> 归档</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/categories/"><i class="anzhiyufont anzhiyu-icon-shapes faa-tada" style="font-size: 0.9em;"></i><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><span> 我的</span></a><ul class="menus_item_child"><li><a class="site-page child faa-parent animated-hover" href="/music/?id=8265222461&amp;server=tencent"><i class="anzhiyufont anzhiyu-icon-music faa-tada" style="font-size: 0.9em;"></i><span> 音乐馆</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/bangumis/"><i class="anzhiyufont anzhiyu-icon-bilibili faa-tada" style="font-size: 0.9em;"></i><span> 追番页</span></a></li><li><a class="site-page child faa-parent animated-hover" href="/comments/"><i class="anzhiyufont anzhiyu-icon-envelope faa-tada" style="font-size: 0.9em;"></i><span> 留言板</span></a></li></ul></div><div class="menus_item"><a class="site-page faa-parent animated-hover" href="/about/"><span> 关于</span></a></div></div><span class="sidebar-menu-item-title">标签</span></div></div><div id="keyboard-tips"><div class="keyboardTitle">博客快捷键</div><div class="keybordList"><div class="keybordItem"><div class="keyGroup"><div class="key">shift K</div></div><div class="keyContent"><div class="content">关闭快捷键功能</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift A</div></div><div class="keyContent"><div class="content">打开/关闭中控台</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift M</div></div><div class="keyContent"><div class="content">播放/暂停音乐</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift D</div></div><div class="keyContent"><div class="content">深色/浅色显示模式</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift S</div></div><div class="keyContent"><div class="content">站内搜索</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift R</div></div><div class="keyContent"><div class="content">随机访问</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift H</div></div><div class="keyContent"><div class="content">返回首页</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift F</div></div><div class="keyContent"><div class="content">友链鱼塘</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift L</div></div><div class="keyContent"><div class="content">友链页面</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift P</div></div><div class="keyContent"><div class="content">关于本站</div></div></div><div class="keybordItem"><div class="keyGroup"><div class="key">shift I</div></div><div class="keyContent"><div class="content">原版/本站右键菜单</div></div></div></div></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="anzhiyufont anzhiyu-icon-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="anzhiyufont anzhiyu-icon-arrows-left-right"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="anzhiyufont anzhiyu-icon-gear"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="anzhiyufont anzhiyu-icon-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="anzhiyufont anzhiyu-icon-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div><div id="nav-music"><a id="nav-music-hoverTips" onclick="anzhiyu.musicToggle()" accesskey="m">播放音乐</a><div id="console-music-bg"></div><meting-js id="8265222461" server="tencent" type="playlist" mutex="true" preload="none" theme="var(--anzhiyu-main)" data-lrctype="0" order="random" volume="0.3"></meting-js></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="anzhiyufont anzhiyu-icon-xmark"></i></button></nav><div class="is-center" id="loading-database"><i class="anzhiyufont anzhiyu-icon-spinner anzhiyu-pulse-icon"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div id="rightMenu"><div class="rightMenu-group rightMenu-small"><div class="rightMenu-item" id="menu-backward"><i class="anzhiyufont anzhiyu-icon-arrow-left"></i></div><div class="rightMenu-item" id="menu-forward"><i class="anzhiyufont anzhiyu-icon-arrow-right"></i></div><div class="rightMenu-item" id="menu-refresh"><i class="anzhiyufont anzhiyu-icon-arrow-rotate-right" style="font-size: 1rem;"></i></div><div class="rightMenu-item" id="menu-top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></div></div><div class="rightMenu-group rightMenu-line rightMenuPlugin"><div class="rightMenu-item" id="menu-copytext"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制选中文本</span></div><div class="rightMenu-item" id="menu-pastetext"><i class="anzhiyufont anzhiyu-icon-paste"></i><span>粘贴文本</span></div><a class="rightMenu-item" id="menu-commenttext"><i class="anzhiyufont anzhiyu-icon-comment-medical"></i><span>引用到评论</span></a><div class="rightMenu-item" id="menu-newwindow"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开</span></div><div class="rightMenu-item" id="menu-copylink"><i class="anzhiyufont anzhiyu-icon-link"></i><span>复制链接地址</span></div><div class="rightMenu-item" id="menu-copyimg"><i class="anzhiyufont anzhiyu-icon-images"></i><span>复制此图片</span></div><div class="rightMenu-item" id="menu-downloadimg"><i class="anzhiyufont anzhiyu-icon-download"></i><span>下载此图片</span></div><div class="rightMenu-item" id="menu-newwindowimg"><i class="anzhiyufont anzhiyu-icon-window-restore"></i><span>新窗口打开图片</span></div><div class="rightMenu-item" id="menu-search"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>站内搜索</span></div><div class="rightMenu-item" id="menu-searchBaidu"><i class="anzhiyufont anzhiyu-icon-magnifying-glass"></i><span>百度搜索</span></div><div class="rightMenu-item" id="menu-music-toggle"><i class="anzhiyufont anzhiyu-icon-play"></i><span>播放音乐</span></div><div class="rightMenu-item" id="menu-music-back"><i class="anzhiyufont anzhiyu-icon-backward"></i><span>切换到上一首</span></div><div class="rightMenu-item" id="menu-music-forward"><i class="anzhiyufont anzhiyu-icon-forward"></i><span>切换到下一首</span></div><div class="rightMenu-item" id="menu-music-playlist" onclick="window.open(&quot;https://y.qq.com/n/ryqq/playlist/8265222461&quot;, &quot;_blank&quot;);" style="display: none;"><i class="anzhiyufont anzhiyu-icon-radio"></i><span>查看所有歌曲</span></div><div class="rightMenu-item" id="menu-music-copyMusicName"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制歌名</span></div></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item menu-link" id="menu-randomPost"><i class="anzhiyufont anzhiyu-icon-shuffle"></i><span>随便逛逛</span></a><a class="rightMenu-item menu-link" href="/categories/"><i class="anzhiyufont anzhiyu-icon-cube"></i><span>博客分类</span></a><a class="rightMenu-item menu-link" href="/tags/"><i class="anzhiyufont anzhiyu-icon-tags"></i><span>文章标签</span></a></div><div class="rightMenu-group rightMenu-line rightMenuOther"><a class="rightMenu-item" id="menu-copy" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-copy"></i><span>复制地址</span></a><a class="rightMenu-item" id="menu-commentBarrage" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-message"></i><span class="menu-commentBarrage-text">关闭热评</span></a><a class="rightMenu-item" id="menu-darkmode" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-circle-half-stroke"></i><span class="menu-darkmode-text">深色模式</span></a><a class="rightMenu-item" id="menu-translate" href="javascript:void(0);"><i class="anzhiyufont anzhiyu-icon-language"></i><span>轉為繁體</span></a></div></div><div id="rightmenu-mask"></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.cbd.int/@fancyapps/ui@5.0.28/dist/fancybox/fancybox.umd.js"></script><script src="https://cdn.cbd.int/instant.page@5.2.0/instantpage.js" type="module"></script><script src="https://cdn.cbd.int/vanilla-lazyload@17.8.5/dist/lazyload.iife.min.js"></script><script src="https://cdn.cbd.int/node-snackbar@0.1.16/dist/snackbar.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.cbd.int/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (true){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><canvas id="universe"></canvas><script async src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.0/dark/dark.js"></script><script async src="/anzhiyu/random.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>(() => {
+  const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaid.length === 0) return
+  const runMermaid = () => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    Array.from($mermaid).forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+      const mermaidID = 'mermaid-' + index
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+
+      const renderV10 = () => {
+        renderFn.then(({svg}) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svg)
+        })
+      }
+
+      const renderV9 = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+      }
+
+      typeof renderFn === 'string' ? renderV9(renderFn) : renderV10()
+    })
+  }
+
+  const loadMermaid = () => {
+    window.loadMermaid ? runMermaid() : getScript('https://cdn.cbd.int/mermaid@10.2.4/dist/mermaid.min.js').then(runMermaid)
+  }
+
+  anzhiyu.addGlobalFn('themeChange', runMermaid, 'mermaid')
+
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const init = () => {
+    twikoo.init(Object.assign({
+      el: '#twikoo-wrap',
+      envId: 'https://twikoo.keaikeqing.cn',
+      region: 'ap-tianjin',
+      onCommentLoaded: () => {
+        anzhiyu.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      }
+    }, null))
+  }
+
+  const loadTwikoo = () => {
+    if (typeof twikoo === 'object') setTimeout(runFn,0)
+    else getScript('https://cdn.cbd.int/twikoo@1.6.44/dist/twikoo.all.min.js').then(runFn)
+  }
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://twikoo.keaikeqing.cn',
+      region: 'ap-tianjin',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const runFn = () => {
+    init();
+    GLOBAL_CONFIG_SITE.isPost && getCount()
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) anzhiyu.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else {
+      loadTwikoo()
+    }
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script><script>(()=>{
+  const getGiscusTheme = theme => {
+    return theme === 'dark' ? 'dark' : 'preferred_color_scheme'
+  }
+
+  const loadGiscus = () => {
+    const config = Object.assign({
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'keaikeqing/blogdis',
+      'data-repo-id': 'R_kgDONKpBew',
+      'data-category-id': 'DIC_kwDONKpBe84Cj_Px',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true
+    },{"data-lang":"zh-CN","data-mapping":"pathname","data-category":"Announcements","data-input-position":"top"})
+
+    const ele = document.createElement('script')
+    for (let key in config) {
+      ele.setAttribute(key, config[key])
+    }
+    document.getElementById('giscus-wrap').appendChild(ele)
+  }
+
+  const changeGiscusTheme = theme => {
+    const sendMessage = message => {
+      const iframe = document.querySelector('iframe.giscus-frame')
+      if (!iframe) return
+      iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app')
+    }
+
+    sendMessage({
+      setConfig: {
+        theme: getGiscusTheme(theme)
+      }
+    });
+  }
+
+  anzhiyu.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if ('Twikoo' === 'Giscus' || !false) {
+    if (false) anzhiyu.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script><input type="hidden" name="page-type" id="page-type" value="post"></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const getComment = () => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://twikoo.keaikeqing.cn',
+        region: 'ap-tianjin',
+        pageSize: 6,
+        includeReply: true
+      }).then(function (res) {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        saveToLocal.set('twikoo-newest-comments', JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray)
+      }).catch(function (err) {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      getScript('https://cdn.cbd.int/twikoo@1.6.44/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'data-lazy-src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'><div class='name'><span>${array[i].nick} </span></div></a>`
+        }
+        
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <time datetime="${array[i].date}">${anzhiyu.diffDate(array[i].date, true)}</time></div>
+        </div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom && ($dom.innerHTML= result)
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('twikoo-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><script async data-pjax src="https://npm.elemecdn.com/anzhiyu-theme-static@1.0.1/bubble/bubble.js"></script><script>var visitorMail = "visitor@keaikeqing.cn";
+</script><script async data-pjax src="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/waterfall/waterfall.js"></script><script src="https://cdn.cbd.int/qrcodejs@1.0.0/qrcode.min.js"></script><script src="/js/anzhiyu/right_click_menu.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.1.9/icon/ali_iconfont_css.css"><script defer src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/js/mathjax_config.js"></script><script type="text/javascript" id="MathJax-script" defer src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/js/lib/MathJax/tex-chtml.js"></script><script defer src="https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/live2d-widget/autoload.js"></script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="false" src="https://cdn.cbd.int/butterfly-extsrc@1.1.3/dist/canvas-nest.min.js"></script><link rel="stylesheet" href="https://cdn.cbd.int/anzhiyu-theme-static@1.0.0/aplayer/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.cbd.int/anzhiyu-blog-static@1.0.1/js/APlayer.min.js"></script><script src="https://cdn.cbd.int/hexo-anzhiyu-music@1.0.1/assets/js/Meting2.min.js"></script><script src="https://cdn.cbd.int/pjax@0.2.8/pjax.min.js"></script><script>let pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:type\"]","meta[property=\"og:site_name\"]","meta[property=\"og:description\"]","head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"]):not([href="#waifu"]):not([href="#waifu-toggle"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+  // removeEventListener scroll 
+  anzhiyu.removeGlobalFnEvent('pjax')
+  anzhiyu.removeGlobalFnEvent('themeChange')
+
+  document.getElementById('rightside').classList.remove('rightside-show')
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', e => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script charset="UTF-8" src="https://cdn.cbd.int/anzhiyu-theme-static@1.1.5/accesskey/accesskey.js"></script></div><div id="popup-window"><div class="popup-window-title">通知</div><div class="popup-window-divider"></div><div class="popup-window-content"><div class="popup-tip">你好呀</div><div class="popup-link"><i class="anzhiyufont anzhiyu-icon-arrow-circle-right"></i></div></div></div></body></html>
