@@ -6,7 +6,7 @@
   <link href="https://blog.keaikeqing.cn/rss.xml" rel="self"/>
   
   <link href="https://blog.keaikeqing.cn/"/>
-  <updated>2025-03-19T08:53:35.000Z</updated>
+  <updated>2025-12-10T14:34:40.000Z</updated>
   <id>https://blog.keaikeqing.cn/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>DNS、端口、安全组与反向代理</title>
+    <link href="https://blog.keaikeqing.cn/2025/12/10/Web/DNS%20%E7%AB%AF%E5%8F%A3%20%E5%AE%89%E5%85%A8%E7%BB%84%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/"/>
+    <id>https://blog.keaikeqing.cn/2025/12/10/Web/DNS%20%E7%AB%AF%E5%8F%A3%20%E5%AE%89%E5%85%A8%E7%BB%84%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/</id>
+    <published>2025-12-10T14:34:40.000Z</published>
+    <updated>2025-12-10T14:34:40.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="dns端口安全组与反向代理">DNS、端口、安全组与反向代理</h1><h2 id="dns只负责域名-ip-的映射">1. DNS：只负责“域名 → IP 的映射”</h2><p>DNS（域名解析）只做一件事：</p><pre class="language-none"><code class="language-none">xx.example.com → 服务器公网 IP</code></pre><p>它<strong>不涉及端口、不涉及防火墙、不涉及安全策略</strong>。你只是告诉全球的 DNS 服务器：</p><blockquote><p>“访问这个域名，请去找这台服务器。”</p></blockquote><hr /><h2 id="端口服务监听的位置">2. 端口：服务监听的位置</h2><p>服务器上的每一个服务，都需要监听一个端口，例如：</p><table><thead><tr><th>服务</th><th>默认端口</th><th>是否需对外开放？</th></tr></thead><tbody><tr><td>HTTP</td><td>80</td><td>✔ 通常开放</td></tr><tr><td>HTTPS</td><td>443</td><td>✔ 通常开放</td></tr><tr><td>xx 后端</td><td>1234</td><td>❌ 不需要开放</td></tr></tbody></table><p>如果你的 xx 运行在：<code>127.0.0.1:1234</code>，那么它只允许<strong>本机访问</strong>。外网无论如何都无法访问这个端口，即使安全组放行了 1234 端口。</p><p>如果你的 xx 运行在：<code>0.0.0.0:1234</code>，那么它允许<strong>所有 IP 访问</strong>。但是，是否能从外网访问，还要看安全组中是否放行了 1234 端口。</p><hr /><h2 id="安全组决定外网能否访问某个端口">3.安全组：决定外网能否访问某个端口</h2><p>安全组是云厂商提供的<strong>入口防火墙</strong>，决定哪些端口可以从外网访问。例如：</p><table><thead><tr><th>端口</th><th>安全组放行？</th><th>外网能访问吗？</th></tr></thead><tbody><tr><td>80</td><td>✔</td><td>能</td></tr><tr><td>443</td><td>✔</td><td>能</td></tr><tr><td>1234</td><td>❌</td><td>不能</td></tr></tbody></table><blockquote><p><strong>只要你的安全组没有放行 1234，即便服务监听了0.0.0.0:1234，外网仍然无法访问。</strong></p></blockquote><hr /><h2 id="反向代理nginx把外网请求转发给内部服务">4.反向代理（Nginx）：把外网请求转发给内部服务</h2><p>反代负责将 80/443 的访问转发到内部端口，如：</p><pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;xx.example.com       ↓Nginx（监听 80&#x2F;443）       ↓127.0.0.1:1234（xx 后端）</code></pre><p>反向代理的意义是：</p><ul><li>外网用户只需要访问域名（80/443）</li><li>内部服务可以隐藏在任意端口</li><li>后端端口无需暴露给外网（更安全）</li></ul><p>这就是为什么<strong>后端端口不用开放</strong>。</p><hr /><h2 id="常见问题">5. 常见问题</h2><p><strong>Q: 配置了反代后，我需要在云服务器后台开启 1234端口吗？</strong></p><p><strong>A:</strong> <strong>完全不需要</strong>。 因为流量是先到达Nginx (443端口)，然后由 Nginx 在服务器<strong>内部</strong>通过<code>localhost</code> 转发给1234。外部防火墙根本看不到这个内部转发过程，所以 1234端口应当保持关闭状态。</p><p><strong>Q:如何检测我的服务是否只监听在本地以及是否开启？</strong></p><p><strong>A:</strong> <strong>使用 <code>netstat</code> 或<code>ss</code> 命令查看端口监听状态：</strong></p><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 使用 netstat</span><span class="token function">sudo</span> <span class="token function">netstat</span> <span class="token parameter variable">-ltn</span> <span class="token operator">|</span> <span class="token function">grep</span> <span class="token number">1234</span><span class="token comment"># 使用 ss</span><span class="token function">sudo</span> ss <span class="token parameter variable">-ltn</span> <span class="token operator">|</span> <span class="token function">grep</span> <span class="token number">1234</span><span class="token comment"># 正确的状态 (只允许本地)</span>tcp  <span class="token number">0</span>  <span class="token number">0</span>  <span class="token number">127.0</span>.0.1:1234   <span class="token number">0.0</span>.0.0:* LISTEN<span class="token comment"># 危险的状态 (允许所有 IP)</span>tcp  <span class="token number">0</span>  <span class="token number">0</span>  <span class="token number">0.0</span>.0.0:1234     <span class="token number">0.0</span>.0.0:* LISTEN</code></pre><h2 id="总结">6. 总结</h2><p>一张简单的关系图</p><pre class="language-none"><code class="language-none">┌──────────────────────────────┐│        用户访问域名           │└───────────────┬──────────────┘                ↓        DNS：解析域名 → 服务器 IP                ↓┌───────────────┴──────────────┐│     Nginx（监听 80 &#x2F; 443）     ││  负责接收外网请求并做反向代理 │└───────────────┬──────────────┘                ↓     内部服务（如 127.0.0.1:1234）</code></pre><p>如果你使用 Nginx 为 xx 或其他后端程序做反代：</p><ul><li>✔ <strong>必须开放的端口：80 / 443</strong></li><li>❌ <strong>不需要开放的端口：1234 等内部端口</strong></li><li>✔ 内部服务保持监听 127.0.0.1 或 0.0.0.0 即可</li><li>✔ <strong>只要做了反代，后端端口就不需要开放！</strong></li></ul><p>用一句话总结：</p><blockquote><p><strong>DNS负责找服务器，安全组控制外网访问权限，端口决定服务位置，反代负责把外部请求转发到内部服务。因此，反代后的后端端口无需对外开放。</strong></p></blockquote>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;dns端口安全组与反向代理&quot;&gt;DNS、端口、安全组与反向代理&lt;/h1&gt;
+&lt;h2 id=&quot;dns只负责域名-ip-的映射&quot;&gt;1. DNS：只负责“域名 → IP 的映射”&lt;/h2&gt;
+&lt;p&gt;DNS（域名解析）只做一件事：&lt;/p&gt;
+&lt;pre class=&quot;languag</summary>
+      
+    
+    
+    
+    <category term="网站搭建" scheme="https://blog.keaikeqing.cn/categories/%E7%BD%91%E7%AB%99%E6%90%AD%E5%BB%BA/"/>
+    
+    
+  </entry>
   
   <entry>
     <title>Python系列之logging</title>
@@ -149,7 +174,7 @@ Network（内容分发网络），是一种通过分布式部署的服务器网�
     <published>2024-11-20T02:00:00.000Z</published>
     <updated>2025-09-23T07:17:00.000Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="twikoo-评论系统配置">Twikoo 评论系统配置</h1><p>目前很多面板支持一键配置，以下是私有部署方式介绍</p><h2 id="云端部署">云端部署</h2><ol type="1"><li>在 <a href="https://twikoo.js.org/">TwiKoo 官网</a>找到云函数部署的私有部署方式，按照文档进行配置。</li><li><a href="https://nodejs.org/zh-cn/download">下载nodejs</a>选择最新的LTS版本，Linux，nvm，npm。按照命令安装。</li><li>指定镜像源：<code>npm config set registry https://registry.npmmirror.com</code></li><li>安装 Twikoo server:<code>npm i -g tkserver</code>查看是否安装成功：<code>npm ls tkserver -g</code></li><li>配置环境变量，主要关注以下几个参数：<ul><li><code>TWIKOO_DATA</code>：lokijs 数据库存储路径，默认是<code>./data</code>。</li><li><code>TWIKOO_PORT</code>：服务端口，默认是<code>8080</code>，注意需要在<strong>服务器安全组</strong>和<strong>宝塔面板</strong>中开放该端口</li><li><code>TWIKOO_IP_HEADERS</code>：在特殊情况下使用，如使用了CloudFlare CDN 它会将请求 IP 写到请求头的 cf-connecting-ip字段上，为了能够正确的获取请求 IP 你可以写成[“headers.cf-connecting-ip”]，默认是 []</li></ul></li><li>启动服务<ul><li>创建一个文件夹，如<code>/www/wwwroot/twikoo</code>，<strong>在该文件夹下</strong>执行启动命令即可将数据库文件存储在该文件夹下</li><li><code>export TWIKOO_DATA=/www/wwwroot/twikoo/data</code></li><li><code>export TWIKOO_PORT=xxxx</code></li><li><code>export TWIKOO_IP_HEADERS=["headers.cf-connecting-ip"]</code></li><li><code>source ~/.bashrc</code></li><li>检查环境变量是否设置成功(注意：有时设置不成功，可以直接添加到/root/.bashrc中)：<ul><li><code>export | grep TWIKOO</code></li><li>粗略启动服务<code>tkserver</code>并访问<code>http://ip:xxxx</code>查看是否成功</li></ul></li></ul></li><li>在<strong>新文件夹</strong>下<code>nohup tkserver &gt;&gt; tkserver.log 2&gt;&amp;1 &amp;</code>命令后台启动，访问<a href="http://服务端IP:端口号" class="uri">http://服务端IP:端口号</a>测试服务是否启动成功。但是概率存在使用<code>nohup &amp;</code>命令运行shell脚本，关闭终端仍然退出(可以试试exit命令注销终端)……</li><li>配置代理实现 HTTPS 访问:<ul><li>添加纯静态站点：PHP项目，twikoo.{域名}</li><li>配置ssl证书:let’s encrypt 手动解析 通配符修改对应的阿里云和cloudflare的DNS解析，也可能只需要修改cloudflare的DNS解析</li><li>添加反向代理: 代理名称：twikoo，目标URL：<ahref="http://127.0.0.1:%7B端口%7D"class="uri">http://127.0.0.1:{端口}</a>，代理域名：$host</li></ul></li><li>最终访问地址为：<a href="https://twikoo.%7B域名%7D"class="uri">https://twikoo.{域名}</a></li><li>注意定期备份数据库文件，防止数据丢失</li></ol><h2 id="前端配置">前端配置</h2><p>到博客配置文件中配置 envId 为 https:// 加域名（例如 <ahref="https://twikoo.yourdomain.com）"class="uri">https://twikoo.yourdomain.com）</a></p><h2 id="更新云端">更新云端</h2><ol type="1"><li>停止旧版本<code>kill $(ps -ef | grep tkserver | grep -v 'grep' | awk '{print $2}')</code></li><li>拉取新版本 <code>npm i -g tkserver@latest</code></li><li>回到上文第7步重新启动服务</li></ol>]]></content>
+    <content type="html"><![CDATA[<h1 id="twikoo-评论系统配置">Twikoo 评论系统配置</h1><p>目前很多面板支持一键配置，以下是私有部署方式介绍</p><h2 id="云端部署">云端部署</h2><ol type="1"><li>在 <a href="https://twikoo.js.org/">TwiKoo 官网</a>找到云函数部署的私有部署方式，按照文档进行配置。</li><li><a href="https://nodejs.org/zh-cn/download">下载nodejs</a>选择最新的LTS版本，Linux，nvm，npm。按照命令安装。</li><li>指定镜像源：<code>npm config set registry https://registry.npmmirror.com</code></li><li>安装 Twikoo server:<code>npm i -g tkserver</code>查看是否安装成功：<code>npm ls tkserver -g</code></li><li>配置环境变量，主要关注以下几个参数：<ul><li><code>TWIKOO_DATA</code>：lokijs 数据库存储路径，默认是<code>./data</code>。</li><li><code>TWIKOO_PORT</code>：服务端口，默认是 <code>8080</code></li><li><code>TWIKOO_IP_HEADERS</code>：在特殊情况下使用，如使用了CloudFlare CDN 它会将请求 IP 写到请求头的 cf-connecting-ip字段上，为了能够正确的获取请求 IP 你可以写成[“headers.cf-connecting-ip”]，默认是 []</li></ul></li><li>启动服务<ul><li>创建一个文件夹，如<code>/www/wwwroot/twikoo</code>，<strong>在该文件夹下</strong>执行启动命令即可将数据库文件存储在该文件夹下</li><li><code>export TWIKOO_DATA=/www/wwwroot/twikoo/data</code></li><li><code>export TWIKOO_PORT=xxxx</code></li><li><code>export TWIKOO_IP_HEADERS=["headers.cf-connecting-ip"]</code></li><li><code>source ~/.bashrc</code></li><li>检查环境变量是否设置成功(注意：有时设置不成功，可以直接添加到/root/.bashrc中)：<ul><li><code>export | grep TWIKOO</code></li><li>粗略启动服务<code>tkserver</code>并访问<code>http://ip:xxxx</code>查看是否成功（<strong>注1</strong>）</li></ul></li></ul></li><li>在<strong>新文件夹</strong>下<code>nohup tkserver &gt;&gt; tkserver.log 2&gt;&amp;1 &amp;</code>命令后台启动，访问<a href="http://服务端IP:端口号" class="uri">http://服务端IP:端口号</a>测试服务是否启动成功。但是概率存在使用<code>nohup &amp;</code>命令运行shell脚本，关闭终端仍然退出(可以试试exit命令注销终端)……</li><li>配置代理实现 HTTPS 访问:<ul><li>添加纯静态站点：PHP项目，twikoo.{域名}</li><li>配置ssl证书:let’s encrypt 手动解析 通配符修改对应的阿里云和cloudflare的DNS解析，也可能只需要修改cloudflare的DNS解析</li><li>添加反向代理: 代理名称：twikoo，目标URL：<ahref="http://127.0.0.1:%7B端口%7D"class="uri">http://127.0.0.1:{端口}</a>，代理域名：$host</li></ul></li><li>最终访问地址为：<a href="https://twikoo.%7B域名%7D"class="uri">https://twikoo.{域名}</a></li><li>注意定期备份数据库文件，防止数据丢失</li></ol><h2 id="前端配置">前端配置</h2><p>到博客配置文件中配置 envId 为 https:// 加域名（例如 <ahref="https://twikoo.yourdomain.com）"class="uri">https://twikoo.yourdomain.com）</a></p><h2 id="更新云端">更新云端</h2><ol type="1"><li>停止旧版本<code>kill $(ps -ef | grep tkserver | grep -v 'grep' | awk '{print $2}')</code></li><li>拉取新版本 <code>npm i -g tkserver@latest</code></li><li>回到上文第7步重新启动服务</li></ol><p>注1：前提是需要在<strong>服务器安全组</strong>和<strong>宝塔面板</strong>中开放该端口，用完<strong>关闭</strong>这两个端口。或者先配置反向代理，直接访问域名。就不需要开放端口了。</p>]]></content>
     
     
       
@@ -231,31 +256,6 @@ Network（内容分发网络），是一种通过分布式部署的服务器网�
 算法是基于&lt;strong&gt;值函数的方法和基于策略的方法的叠加&lt;/strong&gt;。价值模块
 Critic 在&lt;strong&gt;策略模块 Actor
 采样的数据&lt;</summary>
-      
-    
-    
-    
-    <category term="强化学习" scheme="https://blog.keaikeqing.cn/categories/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>强化学习—— 8 策略梯度算法</title>
-    <link href="https://blog.keaikeqing.cn/2024/09/17/RL/8%20%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6%E7%AE%97%E6%B3%95/"/>
-    <id>https://blog.keaikeqing.cn/2024/09/17/RL/8%20%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6%E7%AE%97%E6%B3%95/</id>
-    <published>2024-09-17T05:40:43.000Z</published>
-    <updated>2025-05-29T01:40:43.000Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="策略梯度算法">8 策略梯度算法</h2><p>本章介绍基于<strong>策略</strong>（policy-based）的方法，而策略梯度是基于策略的方法的基础。</p><h3 id="基于价值和基于策略">8.1 基于价值和基于策略</h3><p>Q-learning、DQN 及 DQN改进算法都是基于<strong>价值</strong>（value-based）的方法，其中Q-learning 是处理<strong>有限状态</strong>的算法，而 DQN可以用来解决<strong>连续状态</strong>的问题。</p><p><strong>基于值函数的方法主要是学习值函数，然后根据值函数导出一个策略，学习过程中并不存在一个显式的策略；而基于策略的方法则是直接显式地学习一个目标策略。</strong></p><h3 id="策略梯度">8.2 策略梯度</h3><p>基于策略的方法首先需要将策略参数化。 假设目标策略<spanclass="math inline">\(\pi_{\theta}\)</span>是一个随机性策略，并且处处可微，其中<spanclass="math inline">\(\theta\)</span>是对应的参数。我们可以用一个线性模型或者神经网络模型来为这样一个<strong>策略函数</strong>建模，<strong>输入某个状态，然后输出一个动作的概率分布</strong>。我们的目标是要寻找一个最优策略并最大化这个策略在环境中的期望回报。</p><p>策略学习的目标函数： <span class="math display">\[J(\theta)=E_{s_0}[V^{\pi_{\theta}}(s_0)]\]</span> 其中<spanclass="math inline">\(V^{\pi_{\theta}}(s_0)\)</span>是初始状态为<spanclass="math inline">\(s_0\)</span>时，使用策略<spanclass="math inline">\(\pi_{\theta}\)</span>得到的期望回报。</p><p>有了目标函数，可以将目标函数对参数<spanclass="math inline">\(\theta\)</span>求导，得到导数后，可以按照梯度上升的方法来最大化这个目标函数，从而得到最优策略。<strong>直观理解就是，梯度的修改是让策略更多地去采样到带来较高<spanclass="math inline">\(Q\)</span>值的动作，更少地去采样到带来较低<spanclass="math inline">\(Q\)</span>值的动作。</strong></p><p><strong>注意</strong>：策略梯度算法是<strong>on-policy</strong>的算法，即<strong>必须使用当前策略采样得到的数据来计算梯度</strong>。</p><p>在计算策略梯度的公式中，我们需要用到<spanclass="math inline">\(Q^{\pi_\theta}(s,a)\)</span>，可以采用多种方法对其进行估计。例如Reinforce算法。</p><h3 id="reinforce算法">8.3 Reinforce算法</h3><p>Reinforce算法是策略梯度算法中非常经典的一个算法，它使用<strong>蒙特卡洛方法</strong>来估计动作价值函数<spanclass="math inline">\(Q^{\pi_\theta}(s,a)\)</span>。</p><p>Reinforce算法的具体流程如下：</p><ol type="1"><li>初始化策略参数<spanclass="math inline">\(\theta\)</span>，并设定学习率<spanclass="math inline">\(\alpha\)</span>；</li><li>for 轮次<span class="math inline">\(episode=1,2,...\)</span> do<ul><li>用当前策略<spanclass="math inline">\(\pi_{\theta}\)</span>采样一条轨迹<spanclass="math inline">\({s_1,a_1,r_1,s_2,a_2,r_2,...,s_T,a_T,r_T}\)</span>；</li><li>计算当前轨迹每个时刻<spanclass="math inline">\(t\)</span>往后的回报<spanclass="math inline">\(\sum_{k=t}^T\gamma^{k-t}r_k\)</span>，记为<spanclass="math inline">\(G_t\)</span>；</li><li>对<span class="math inline">\(\theta\)</span>进行更新，<spanclass="math inline">\(\theta\leftarrow\theta+\alpha\sum_{t}^T\nabla_\theta\log\pi_\theta(a_t|s_t)G_t\)</span>。</li></ul></li><li>end for</li></ol><h3 id="总结">8.4 总结</h3><p>REINFORCE算法是策略梯度乃至强化学习的典型代表，智能体<strong>根据当前策略直接和环境交互</strong>，通过<strong>采样得到的轨迹数据</strong>直接<strong>计算出策略参数的梯度</strong>，进而更新当前策略，使其向最大化策略期望回报的目标靠近。</p><p>这种学习方式是典型的<strong>从交互中学习</strong>，并且其<strong>优化的目标（即策略期望回报）正是最终所使用策略的性能</strong>，这比基于价值的强化学习算法的优化目标（一般是时序差分误差的最小化）要更加直接。</p><p>REINFORCE算法理论上是能保证<strong>局部最优</strong>的，它实际上是<strong>借助蒙特卡洛方法采样轨迹来估计动作价值</strong>，这种做法的一大优点是可以得到<strong>无偏的梯度</strong>。但是，正是因为使用了蒙特卡洛方法，REINFORCE算法的梯度估计的方差很大，这主要是因为<strong>每条采样轨迹的回报值波动比较大</strong>，可能会造成一定程度上的不稳定，这也是Actor-Critic 算法要解决的问题。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h2 id=&quot;策略梯度算法&quot;&gt;8 策略梯度算法&lt;/h2&gt;
-&lt;p&gt;本章介绍基于&lt;strong&gt;策略&lt;/strong&gt;（policy-based）的方法，而策略梯度是基于策略的方法的基础。&lt;/p&gt;
-&lt;h3 id=&quot;基于价值和基于策略&quot;&gt;8.1 基于价值和基于策略&lt;/h3&gt;
-&lt;p&gt;Q</summary>
       
     
     
