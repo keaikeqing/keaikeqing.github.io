@@ -2,7 +2,7 @@
 @font-face {
   font-family: "Maple Mono";
   font-display: swap;
-  src: url(https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@latest/assets/fonts/MapleMonoNormalNL-CN-Regular.woff2)
+  src: url(https://gcore.jsdelivr.net/npm/@keaikeqing/blog-static@0.3.6/assets/fonts/MapleMonoNormalNL-CN-Regular.woff2)
     format("woff2");
 }
 
